@@ -1,0 +1,702 @@
+[
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.google.com/favicon.ico",
+    "title": "Tech Innovation Hub",
+    "description": "Dive into the cutting-edge world of technology where artificial intelligence meets human creativity. Discover groundbreaking innovations that are reshaping industries, from machine learning algorithms to quantum computing breakthroughs. This hub connects visionaries, developers, and entrepreneurs who are building the future of digital transformation and creating solutions that will impact millions of lives worldwide.",
+    "id": 1
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.youtube.com/favicon.ico",
+    "title": "Mountain Adventure",
+    "description": "Breathtaking mountain peaks, crystal-clear alpine lakes, and panoramic vistas. Perfect escape for outdoor enthusiasts seeking adventure and tranquility in nature's untamed wilderness.",
+    "id": 2
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.spotify.com/favicon.ico",
+    "title": "Forest Serenity",
+    "description": "Immerse yourself in the peaceful sanctuary of ancient forests where time seems to stand still and nature's symphony creates the perfect backdrop for meditation. These verdant woodlands offer winding paths through towering trees, hidden clearings filled with wildflowers, and the gentle sound of rustling leaves. Find inner peace as you breathe in the fresh forest air and discover the healing power of nature's embrace.",
+    "id": 3
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+    "favicon": "https://www.netflix.com/favicon.ico",
+    "title": "Urban Skyline",
+    "description": "Modern cityscapes with architectural marvels and dazzling lights. Experience unlimited opportunities for exploration, career growth, and cultural adventures in metropolitan life.",
+    "id": 4
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.github.com/favicon.ico",
+    "title": "Ocean Waves",
+    "description": "Therapeutic rhythm of endless waves crashing against pristine shores. Ultimate relaxation and spiritual renewal through the ocean's timeless dance and salt breeze.",
+    "id": 5
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800",
+    "favicon": "https://www.twitter.com/favicon.ico",
+    "title": "Desert Sunset",
+    "description": "Marvel at the spectacular golden hour as the sun sets over vast desert landscapes, painting the sky in brilliant oranges, purples, and reds that seem almost otherworldly. This arid wilderness showcases nature's resilience and beauty through unique rock formations, ancient cacti, and an endless horizon that stretches beyond imagination. The desert's silence and solitude offer profound moments of reflection and a deep connection with the Earth's raw, untouched magnificence.",
+    "id": 6
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800",
+    "favicon": "https://www.instagram.com/favicon.ico",
+    "title": "Lake Reflection",
+    "description": "Discover the perfect mirror of nature where crystal-clear lake waters create stunning reflections of surrounding mountains, clouds, and forests, doubling the beauty of every landscape. This serene aquatic environment provides ideal conditions for photography, contemplation, and peaceful moments away from life's chaos. The still waters host diverse wildlife and offer recreational activities like kayaking, fishing, and lakeside camping under star-filled skies that reflect perfectly in the glassy surface.",
+    "id": 7
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.linkedin.com/favicon.ico",
+    "title": "Professional Growth",
+    "description": "Career development through networking, skill building, and mentorship opportunities. Build connections and achieve your professional goals in collaborative environments.",
+    "id": 8
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.amazon.com/favicon.ico",
+    "title": "Shopping Paradise",
+    "description": "Enter a world of endless retail possibilities where cutting-edge products meet unbeatable prices and customer satisfaction is the top priority. This shopping destination features everything from innovative gadgets and fashion-forward clothing to home essentials and rare collectibles. With lightning-fast delivery, excellent customer service, and a vast marketplace that connects buyers with sellers worldwide, this platform has revolutionized how we discover, compare, and purchase products that enhance our daily lives.",
+    "id": 9
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.reddit.com/favicon.ico",
+    "title": "Community Hub",
+    "description": "Join vibrant online communities sharing knowledge and experiences. Connect with diverse voices and find meaningful discussions on virtually every topic imaginable.",
+    "id": 10
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.google.com/favicon.ico",
+    "title": "Tech Innovation Hub",
+    "description": "Dive into the cutting-edge world of technology where artificial intelligence meets human creativity. Discover groundbreaking innovations that are reshaping industries, from machine learning algorithms to quantum computing breakthroughs. This hub connects visionaries, developers, and entrepreneurs who are building the future of digital transformation and creating solutions that will impact millions of lives worldwide.",
+    "id": 11
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.youtube.com/favicon.ico",
+    "title": "Mountain Adventure",
+    "description": "Breathtaking mountain peaks, crystal-clear alpine lakes, and panoramic vistas. Perfect escape for outdoor enthusiasts seeking adventure and tranquility in nature's untamed wilderness.",
+    "id": 12
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.spotify.com/favicon.ico",
+    "title": "Forest Serenity",
+    "description": "Immerse yourself in the peaceful sanctuary of ancient forests where time seems to stand still and nature's symphony creates the perfect backdrop for meditation. These verdant woodlands offer winding paths through towering trees, hidden clearings filled with wildflowers, and the gentle sound of rustling leaves. Find inner peace as you breathe in the fresh forest air and discover the healing power of nature's embrace.",
+    "id": 13
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+    "favicon": "https://www.netflix.com/favicon.ico",
+    "title": "Urban Skyline",
+    "description": "Modern cityscapes with architectural marvels and dazzling lights. Experience unlimited opportunities for exploration, career growth, and cultural adventures in metropolitan life.",
+    "id": 14
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.github.com/favicon.ico",
+    "title": "Ocean Waves",
+    "description": "Therapeutic rhythm of endless waves crashing against pristine shores. Ultimate relaxation and spiritual renewal through the ocean's timeless dance and salt breeze.",
+    "id": 15
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800",
+    "favicon": "https://www.twitter.com/favicon.ico",
+    "title": "Desert Sunset",
+    "description": "Marvel at the spectacular golden hour as the sun sets over vast desert landscapes, painting the sky in brilliant oranges, purples, and reds that seem almost otherworldly. This arid wilderness showcases nature's resilience and beauty through unique rock formations, ancient cacti, and an endless horizon that stretches beyond imagination. The desert's silence and solitude offer profound moments of reflection and a deep connection with the Earth's raw, untouched magnificence.",
+    "id": 16
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800",
+    "favicon": "https://www.instagram.com/favicon.ico",
+    "title": "Lake Reflection",
+    "description": "Discover the perfect mirror of nature where crystal-clear lake waters create stunning reflections of surrounding mountains, clouds, and forests, doubling the beauty of every landscape. This serene aquatic environment provides ideal conditions for photography, contemplation, and peaceful moments away from life's chaos. The still waters host diverse wildlife and offer recreational activities like kayaking, fishing, and lakeside camping under star-filled skies that reflect perfectly in the glassy surface.",
+    "id": 17
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.linkedin.com/favicon.ico",
+    "title": "Professional Growth",
+    "description": "Career development through networking, skill building, and mentorship opportunities. Build connections and achieve your professional goals in collaborative environments.",
+    "id": 18
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.amazon.com/favicon.ico",
+    "title": "Shopping Paradise",
+    "description": "Enter a world of endless retail possibilities where cutting-edge products meet unbeatable prices and customer satisfaction is the top priority. This shopping destination features everything from innovative gadgets and fashion-forward clothing to home essentials and rare collectibles. With lightning-fast delivery, excellent customer service, and a vast marketplace that connects buyers with sellers worldwide, this platform has revolutionized how we discover, compare, and purchase products that enhance our daily lives.",
+    "id": 19
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.reddit.com/favicon.ico",
+    "title": "Community Hub",
+    "description": "Join vibrant online communities sharing knowledge and experiences. Connect with diverse voices and find meaningful discussions on virtually every topic imaginable.",
+    "id": 20
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.google.com/favicon.ico",
+    "title": "Tech Innovation Hub",
+    "description": "Dive into the cutting-edge world of technology where artificial intelligence meets human creativity. Discover groundbreaking innovations that are reshaping industries, from machine learning algorithms to quantum computing breakthroughs. This hub connects visionaries, developers, and entrepreneurs who are building the future of digital transformation and creating solutions that will impact millions of lives worldwide.",
+    "id": 21
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.youtube.com/favicon.ico",
+    "title": "Mountain Adventure",
+    "description": "Breathtaking mountain peaks, crystal-clear alpine lakes, and panoramic vistas. Perfect escape for outdoor enthusiasts seeking adventure and tranquility in nature's untamed wilderness.",
+    "id": 22
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.spotify.com/favicon.ico",
+    "title": "Forest Serenity",
+    "description": "Immerse yourself in the peaceful sanctuary of ancient forests where time seems to stand still and nature's symphony creates the perfect backdrop for meditation. These verdant woodlands offer winding paths through towering trees, hidden clearings filled with wildflowers, and the gentle sound of rustling leaves. Find inner peace as you breathe in the fresh forest air and discover the healing power of nature's embrace.",
+    "id": 23
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+    "favicon": "https://www.netflix.com/favicon.ico",
+    "title": "Urban Skyline",
+    "description": "Modern cityscapes with architectural marvels and dazzling lights. Experience unlimited opportunities for exploration, career growth, and cultural adventures in metropolitan life.",
+    "id": 24
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.github.com/favicon.ico",
+    "title": "Ocean Waves",
+    "description": "Therapeutic rhythm of endless waves crashing against pristine shores. Ultimate relaxation and spiritual renewal through the ocean's timeless dance and salt breeze.",
+    "id": 25
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800",
+    "favicon": "https://www.twitter.com/favicon.ico",
+    "title": "Desert Sunset",
+    "description": "Marvel at the spectacular golden hour as the sun sets over vast desert landscapes, painting the sky in brilliant oranges, purples, and reds that seem almost otherworldly. This arid wilderness showcases nature's resilience and beauty through unique rock formations, ancient cacti, and an endless horizon that stretches beyond imagination. The desert's silence and solitude offer profound moments of reflection and a deep connection with the Earth's raw, untouched magnificence.",
+    "id": 26
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800",
+    "favicon": "https://www.instagram.com/favicon.ico",
+    "title": "Lake Reflection",
+    "description": "Discover the perfect mirror of nature where crystal-clear lake waters create stunning reflections of surrounding mountains, clouds, and forests, doubling the beauty of every landscape. This serene aquatic environment provides ideal conditions for photography, contemplation, and peaceful moments away from life's chaos. The still waters host diverse wildlife and offer recreational activities like kayaking, fishing, and lakeside camping under star-filled skies that reflect perfectly in the glassy surface.",
+    "id": 27
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.linkedin.com/favicon.ico",
+    "title": "Professional Growth",
+    "description": "Career development through networking, skill building, and mentorship opportunities. Build connections and achieve your professional goals in collaborative environments.",
+    "id": 28
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.amazon.com/favicon.ico",
+    "title": "Shopping Paradise",
+    "description": "Enter a world of endless retail possibilities where cutting-edge products meet unbeatable prices and customer satisfaction is the top priority. This shopping destination features everything from innovative gadgets and fashion-forward clothing to home essentials and rare collectibles. With lightning-fast delivery, excellent customer service, and a vast marketplace that connects buyers with sellers worldwide, this platform has revolutionized how we discover, compare, and purchase products that enhance our daily lives.",
+    "id": 29
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.reddit.com/favicon.ico",
+    "title": "Community Hub",
+    "description": "Join vibrant online communities sharing knowledge and experiences. Connect with diverse voices and find meaningful discussions on virtually every topic imaginable.",
+    "id": 30
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.google.com/favicon.ico",
+    "title": "Tech Innovation Hub",
+    "description": "Dive into the cutting-edge world of technology where artificial intelligence meets human creativity. Discover groundbreaking innovations that are reshaping industries, from machine learning algorithms to quantum computing breakthroughs. This hub connects visionaries, developers, and entrepreneurs who are building the future of digital transformation and creating solutions that will impact millions of lives worldwide.",
+    "id": 31
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.youtube.com/favicon.ico",
+    "title": "Mountain Adventure",
+    "description": "Breathtaking mountain peaks, crystal-clear alpine lakes, and panoramic vistas. Perfect escape for outdoor enthusiasts seeking adventure and tranquility in nature's untamed wilderness.",
+    "id": 32
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.spotify.com/favicon.ico",
+    "title": "Forest Serenity",
+    "description": "Immerse yourself in the peaceful sanctuary of ancient forests where time seems to stand still and nature's symphony creates the perfect backdrop for meditation. These verdant woodlands offer winding paths through towering trees, hidden clearings filled with wildflowers, and the gentle sound of rustling leaves. Find inner peace as you breathe in the fresh forest air and discover the healing power of nature's embrace.",
+    "id": 33
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+    "favicon": "https://www.netflix.com/favicon.ico",
+    "title": "Urban Skyline",
+    "description": "Modern cityscapes with architectural marvels and dazzling lights. Experience unlimited opportunities for exploration, career growth, and cultural adventures in metropolitan life.",
+    "id": 34
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.github.com/favicon.ico",
+    "title": "Ocean Waves",
+    "description": "Therapeutic rhythm of endless waves crashing against pristine shores. Ultimate relaxation and spiritual renewal through the ocean's timeless dance and salt breeze.",
+    "id": 35
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800",
+    "favicon": "https://www.twitter.com/favicon.ico",
+    "title": "Desert Sunset",
+    "description": "Marvel at the spectacular golden hour as the sun sets over vast desert landscapes, painting the sky in brilliant oranges, purples, and reds that seem almost otherworldly. This arid wilderness showcases nature's resilience and beauty through unique rock formations, ancient cacti, and an endless horizon that stretches beyond imagination. The desert's silence and solitude offer profound moments of reflection and a deep connection with the Earth's raw, untouched magnificence.",
+    "id": 36
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800",
+    "favicon": "https://www.instagram.com/favicon.ico",
+    "title": "Lake Reflection",
+    "description": "Discover the perfect mirror of nature where crystal-clear lake waters create stunning reflections of surrounding mountains, clouds, and forests, doubling the beauty of every landscape. This serene aquatic environment provides ideal conditions for photography, contemplation, and peaceful moments away from life's chaos. The still waters host diverse wildlife and offer recreational activities like kayaking, fishing, and lakeside camping under star-filled skies that reflect perfectly in the glassy surface.",
+    "id": 37
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.linkedin.com/favicon.ico",
+    "title": "Professional Growth",
+    "description": "Career development through networking, skill building, and mentorship opportunities. Build connections and achieve your professional goals in collaborative environments.",
+    "id": 38
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.amazon.com/favicon.ico",
+    "title": "Shopping Paradise",
+    "description": "Enter a world of endless retail possibilities where cutting-edge products meet unbeatable prices and customer satisfaction is the top priority. This shopping destination features everything from innovative gadgets and fashion-forward clothing to home essentials and rare collectibles. With lightning-fast delivery, excellent customer service, and a vast marketplace that connects buyers with sellers worldwide, this platform has revolutionized how we discover, compare, and purchase products that enhance our daily lives.",
+    "id": 39
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.reddit.com/favicon.ico",
+    "title": "Community Hub",
+    "description": "Join vibrant online communities sharing knowledge and experiences. Connect with diverse voices and find meaningful discussions on virtually every topic imaginable.",
+    "id": 40
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.google.com/favicon.ico",
+    "title": "Tech Innovation Hub",
+    "description": "Dive into the cutting-edge world of technology where artificial intelligence meets human creativity. Discover groundbreaking innovations that are reshaping industries, from machine learning algorithms to quantum computing breakthroughs. This hub connects visionaries, developers, and entrepreneurs who are building the future of digital transformation and creating solutions that will impact millions of lives worldwide.",
+    "id": 41
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.youtube.com/favicon.ico",
+    "title": "Mountain Adventure",
+    "description": "Breathtaking mountain peaks, crystal-clear alpine lakes, and panoramic vistas. Perfect escape for outdoor enthusiasts seeking adventure and tranquility in nature's untamed wilderness.",
+    "id": 42
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.spotify.com/favicon.ico",
+    "title": "Forest Serenity",
+    "description": "Immerse yourself in the peaceful sanctuary of ancient forests where time seems to stand still and nature's symphony creates the perfect backdrop for meditation. These verdant woodlands offer winding paths through towering trees, hidden clearings filled with wildflowers, and the gentle sound of rustling leaves. Find inner peace as you breathe in the fresh forest air and discover the healing power of nature's embrace.",
+    "id": 43
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+    "favicon": "https://www.netflix.com/favicon.ico",
+    "title": "Urban Skyline",
+    "description": "Modern cityscapes with architectural marvels and dazzling lights. Experience unlimited opportunities for exploration, career growth, and cultural adventures in metropolitan life.",
+    "id": 44
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.github.com/favicon.ico",
+    "title": "Ocean Waves",
+    "description": "Therapeutic rhythm of endless waves crashing against pristine shores. Ultimate relaxation and spiritual renewal through the ocean's timeless dance and salt breeze.",
+    "id": 45
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800",
+    "favicon": "https://www.twitter.com/favicon.ico",
+    "title": "Desert Sunset",
+    "description": "Marvel at the spectacular golden hour as the sun sets over vast desert landscapes, painting the sky in brilliant oranges, purples, and reds that seem almost otherworldly. This arid wilderness showcases nature's resilience and beauty through unique rock formations, ancient cacti, and an endless horizon that stretches beyond imagination. The desert's silence and solitude offer profound moments of reflection and a deep connection with the Earth's raw, untouched magnificence.",
+    "id": 46
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800",
+    "favicon": "https://www.instagram.com/favicon.ico",
+    "title": "Lake Reflection",
+    "description": "Discover the perfect mirror of nature where crystal-clear lake waters create stunning reflections of surrounding mountains, clouds, and forests, doubling the beauty of every landscape. This serene aquatic environment provides ideal conditions for photography, contemplation, and peaceful moments away from life's chaos. The still waters host diverse wildlife and offer recreational activities like kayaking, fishing, and lakeside camping under star-filled skies that reflect perfectly in the glassy surface.",
+    "id": 47
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.linkedin.com/favicon.ico",
+    "title": "Professional Growth",
+    "description": "Career development through networking, skill building, and mentorship opportunities. Build connections and achieve your professional goals in collaborative environments.",
+    "id": 48
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.amazon.com/favicon.ico",
+    "title": "Shopping Paradise",
+    "description": "Enter a world of endless retail possibilities where cutting-edge products meet unbeatable prices and customer satisfaction is the top priority. This shopping destination features everything from innovative gadgets and fashion-forward clothing to home essentials and rare collectibles. With lightning-fast delivery, excellent customer service, and a vast marketplace that connects buyers with sellers worldwide, this platform has revolutionized how we discover, compare, and purchase products that enhance our daily lives.",
+    "id": 49
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.reddit.com/favicon.ico",
+    "title": "Community Hub",
+    "description": "Join vibrant online communities sharing knowledge and experiences. Connect with diverse voices and find meaningful discussions on virtually every topic imaginable.",
+    "id": 50
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.google.com/favicon.ico",
+    "title": "Tech Innovation Hub",
+    "description": "Dive into the cutting-edge world of technology where artificial intelligence meets human creativity. Discover groundbreaking innovations that are reshaping industries, from machine learning algorithms to quantum computing breakthroughs. This hub connects visionaries, developers, and entrepreneurs who are building the future of digital transformation and creating solutions that will impact millions of lives worldwide.",
+    "id": 51
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.youtube.com/favicon.ico",
+    "title": "Mountain Adventure",
+    "description": "Breathtaking mountain peaks, crystal-clear alpine lakes, and panoramic vistas. Perfect escape for outdoor enthusiasts seeking adventure and tranquility in nature's untamed wilderness.",
+    "id": 52
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.spotify.com/favicon.ico",
+    "title": "Forest Serenity",
+    "description": "Immerse yourself in the peaceful sanctuary of ancient forests where time seems to stand still and nature's symphony creates the perfect backdrop for meditation. These verdant woodlands offer winding paths through towering trees, hidden clearings filled with wildflowers, and the gentle sound of rustling leaves. Find inner peace as you breathe in the fresh forest air and discover the healing power of nature's embrace.",
+    "id": 53
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+    "favicon": "https://www.netflix.com/favicon.ico",
+    "title": "Urban Skyline",
+    "description": "Modern cityscapes with architectural marvels and dazzling lights. Experience unlimited opportunities for exploration, career growth, and cultural adventures in metropolitan life.",
+    "id": 54
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.github.com/favicon.ico",
+    "title": "Ocean Waves",
+    "description": "Therapeutic rhythm of endless waves crashing against pristine shores. Ultimate relaxation and spiritual renewal through the ocean's timeless dance and salt breeze.",
+    "id": 55
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800",
+    "favicon": "https://www.twitter.com/favicon.ico",
+    "title": "Desert Sunset",
+    "description": "Marvel at the spectacular golden hour as the sun sets over vast desert landscapes, painting the sky in brilliant oranges, purples, and reds that seem almost otherworldly. This arid wilderness showcases nature's resilience and beauty through unique rock formations, ancient cacti, and an endless horizon that stretches beyond imagination. The desert's silence and solitude offer profound moments of reflection and a deep connection with the Earth's raw, untouched magnificence.",
+    "id": 56
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800",
+    "favicon": "https://www.instagram.com/favicon.ico",
+    "title": "Lake Reflection",
+    "description": "Discover the perfect mirror of nature where crystal-clear lake waters create stunning reflections of surrounding mountains, clouds, and forests, doubling the beauty of every landscape. This serene aquatic environment provides ideal conditions for photography, contemplation, and peaceful moments away from life's chaos. The still waters host diverse wildlife and offer recreational activities like kayaking, fishing, and lakeside camping under star-filled skies that reflect perfectly in the glassy surface.",
+    "id": 57
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.linkedin.com/favicon.ico",
+    "title": "Professional Growth",
+    "description": "Career development through networking, skill building, and mentorship opportunities. Build connections and achieve your professional goals in collaborative environments.",
+    "id": 58
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.amazon.com/favicon.ico",
+    "title": "Shopping Paradise",
+    "description": "Enter a world of endless retail possibilities where cutting-edge products meet unbeatable prices and customer satisfaction is the top priority. This shopping destination features everything from innovative gadgets and fashion-forward clothing to home essentials and rare collectibles. With lightning-fast delivery, excellent customer service, and a vast marketplace that connects buyers with sellers worldwide, this platform has revolutionized how we discover, compare, and purchase products that enhance our daily lives.",
+    "id": 59
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.reddit.com/favicon.ico",
+    "title": "Community Hub",
+    "description": "Join vibrant online communities sharing knowledge and experiences. Connect with diverse voices and find meaningful discussions on virtually every topic imaginable.",
+    "id": 60
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.google.com/favicon.ico",
+    "title": "Tech Innovation Hub",
+    "description": "Dive into the cutting-edge world of technology where artificial intelligence meets human creativity. Discover groundbreaking innovations that are reshaping industries, from machine learning algorithms to quantum computing breakthroughs. This hub connects visionaries, developers, and entrepreneurs who are building the future of digital transformation and creating solutions that will impact millions of lives worldwide.",
+    "id": 61
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.youtube.com/favicon.ico",
+    "title": "Mountain Adventure",
+    "description": "Breathtaking mountain peaks, crystal-clear alpine lakes, and panoramic vistas. Perfect escape for outdoor enthusiasts seeking adventure and tranquility in nature's untamed wilderness.",
+    "id": 62
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.spotify.com/favicon.ico",
+    "title": "Forest Serenity",
+    "description": "Immerse yourself in the peaceful sanctuary of ancient forests where time seems to stand still and nature's symphony creates the perfect backdrop for meditation. These verdant woodlands offer winding paths through towering trees, hidden clearings filled with wildflowers, and the gentle sound of rustling leaves. Find inner peace as you breathe in the fresh forest air and discover the healing power of nature's embrace.",
+    "id": 63
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+    "favicon": "https://www.netflix.com/favicon.ico",
+    "title": "Urban Skyline",
+    "description": "Modern cityscapes with architectural marvels and dazzling lights. Experience unlimited opportunities for exploration, career growth, and cultural adventures in metropolitan life.",
+    "id": 64
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.github.com/favicon.ico",
+    "title": "Ocean Waves",
+    "description": "Therapeutic rhythm of endless waves crashing against pristine shores. Ultimate relaxation and spiritual renewal through the ocean's timeless dance and salt breeze.",
+    "id": 65
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800",
+    "favicon": "https://www.twitter.com/favicon.ico",
+    "title": "Desert Sunset",
+    "description": "Marvel at the spectacular golden hour as the sun sets over vast desert landscapes, painting the sky in brilliant oranges, purples, and reds that seem almost otherworldly. This arid wilderness showcases nature's resilience and beauty through unique rock formations, ancient cacti, and an endless horizon that stretches beyond imagination. The desert's silence and solitude offer profound moments of reflection and a deep connection with the Earth's raw, untouched magnificence.",
+    "id": 66
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800",
+    "favicon": "https://www.instagram.com/favicon.ico",
+    "title": "Lake Reflection",
+    "description": "Discover the perfect mirror of nature where crystal-clear lake waters create stunning reflections of surrounding mountains, clouds, and forests, doubling the beauty of every landscape. This serene aquatic environment provides ideal conditions for photography, contemplation, and peaceful moments away from life's chaos. The still waters host diverse wildlife and offer recreational activities like kayaking, fishing, and lakeside camping under star-filled skies that reflect perfectly in the glassy surface.",
+    "id": 67
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.linkedin.com/favicon.ico",
+    "title": "Professional Growth",
+    "description": "Career development through networking, skill building, and mentorship opportunities. Build connections and achieve your professional goals in collaborative environments.",
+    "id": 68
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.amazon.com/favicon.ico",
+    "title": "Shopping Paradise",
+    "description": "Enter a world of endless retail possibilities where cutting-edge products meet unbeatable prices and customer satisfaction is the top priority. This shopping destination features everything from innovative gadgets and fashion-forward clothing to home essentials and rare collectibles. With lightning-fast delivery, excellent customer service, and a vast marketplace that connects buyers with sellers worldwide, this platform has revolutionized how we discover, compare, and purchase products that enhance our daily lives.",
+    "id": 69
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.reddit.com/favicon.ico",
+    "title": "Community Hub",
+    "description": "Join vibrant online communities sharing knowledge and experiences. Connect with diverse voices and find meaningful discussions on virtually every topic imaginable.",
+    "id": 70
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.google.com/favicon.ico",
+    "title": "Tech Innovation Hub",
+    "description": "Dive into the cutting-edge world of technology where artificial intelligence meets human creativity. Discover groundbreaking innovations that are reshaping industries, from machine learning algorithms to quantum computing breakthroughs. This hub connects visionaries, developers, and entrepreneurs who are building the future of digital transformation and creating solutions that will impact millions of lives worldwide.",
+    "id": 71
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.youtube.com/favicon.ico",
+    "title": "Mountain Adventure",
+    "description": "Breathtaking mountain peaks, crystal-clear alpine lakes, and panoramic vistas. Perfect escape for outdoor enthusiasts seeking adventure and tranquility in nature's untamed wilderness.",
+    "id": 72
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.spotify.com/favicon.ico",
+    "title": "Forest Serenity",
+    "description": "Immerse yourself in the peaceful sanctuary of ancient forests where time seems to stand still and nature's symphony creates the perfect backdrop for meditation. These verdant woodlands offer winding paths through towering trees, hidden clearings filled with wildflowers, and the gentle sound of rustling leaves. Find inner peace as you breathe in the fresh forest air and discover the healing power of nature's embrace.",
+    "id": 73
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+    "favicon": "https://www.netflix.com/favicon.ico",
+    "title": "Urban Skyline",
+    "description": "Modern cityscapes with architectural marvels and dazzling lights. Experience unlimited opportunities for exploration, career growth, and cultural adventures in metropolitan life.",
+    "id": 74
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.github.com/favicon.ico",
+    "title": "Ocean Waves",
+    "description": "Therapeutic rhythm of endless waves crashing against pristine shores. Ultimate relaxation and spiritual renewal through the ocean's timeless dance and salt breeze.",
+    "id": 75
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800",
+    "favicon": "https://www.twitter.com/favicon.ico",
+    "title": "Desert Sunset",
+    "description": "Marvel at the spectacular golden hour as the sun sets over vast desert landscapes, painting the sky in brilliant oranges, purples, and reds that seem almost otherworldly. This arid wilderness showcases nature's resilience and beauty through unique rock formations, ancient cacti, and an endless horizon that stretches beyond imagination. The desert's silence and solitude offer profound moments of reflection and a deep connection with the Earth's raw, untouched magnificence.",
+    "id": 76
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800",
+    "favicon": "https://www.instagram.com/favicon.ico",
+    "title": "Lake Reflection",
+    "description": "Discover the perfect mirror of nature where crystal-clear lake waters create stunning reflections of surrounding mountains, clouds, and forests, doubling the beauty of every landscape. This serene aquatic environment provides ideal conditions for photography, contemplation, and peaceful moments away from life's chaos. The still waters host diverse wildlife and offer recreational activities like kayaking, fishing, and lakeside camping under star-filled skies that reflect perfectly in the glassy surface.",
+    "id": 77
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.linkedin.com/favicon.ico",
+    "title": "Professional Growth",
+    "description": "Career development through networking, skill building, and mentorship opportunities. Build connections and achieve your professional goals in collaborative environments.",
+    "id": 78
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.amazon.com/favicon.ico",
+    "title": "Shopping Paradise",
+    "description": "Enter a world of endless retail possibilities where cutting-edge products meet unbeatable prices and customer satisfaction is the top priority. This shopping destination features everything from innovative gadgets and fashion-forward clothing to home essentials and rare collectibles. With lightning-fast delivery, excellent customer service, and a vast marketplace that connects buyers with sellers worldwide, this platform has revolutionized how we discover, compare, and purchase products that enhance our daily lives.",
+    "id": 79
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.reddit.com/favicon.ico",
+    "title": "Community Hub",
+    "description": "Join vibrant online communities sharing knowledge and experiences. Connect with diverse voices and find meaningful discussions on virtually every topic imaginable.",
+    "id": 80
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.google.com/favicon.ico",
+    "title": "Tech Innovation Hub",
+    "description": "Dive into the cutting-edge world of technology where artificial intelligence meets human creativity. Discover groundbreaking innovations that are reshaping industries, from machine learning algorithms to quantum computing breakthroughs. This hub connects visionaries, developers, and entrepreneurs who are building the future of digital transformation and creating solutions that will impact millions of lives worldwide.",
+    "id": 81
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.youtube.com/favicon.ico",
+    "title": "Mountain Adventure",
+    "description": "Breathtaking mountain peaks, crystal-clear alpine lakes, and panoramic vistas. Perfect escape for outdoor enthusiasts seeking adventure and tranquility in nature's untamed wilderness.",
+    "id": 82
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.spotify.com/favicon.ico",
+    "title": "Forest Serenity",
+    "description": "Immerse yourself in the peaceful sanctuary of ancient forests where time seems to stand still and nature's symphony creates the perfect backdrop for meditation. These verdant woodlands offer winding paths through towering trees, hidden clearings filled with wildflowers, and the gentle sound of rustling leaves. Find inner peace as you breathe in the fresh forest air and discover the healing power of nature's embrace.",
+    "id": 83
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+    "favicon": "https://www.netflix.com/favicon.ico",
+    "title": "Urban Skyline",
+    "description": "Modern cityscapes with architectural marvels and dazzling lights. Experience unlimited opportunities for exploration, career growth, and cultural adventures in metropolitan life.",
+    "id": 84
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.github.com/favicon.ico",
+    "title": "Ocean Waves",
+    "description": "Therapeutic rhythm of endless waves crashing against pristine shores. Ultimate relaxation and spiritual renewal through the ocean's timeless dance and salt breeze.",
+    "id": 85
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800",
+    "favicon": "https://www.twitter.com/favicon.ico",
+    "title": "Desert Sunset",
+    "description": "Marvel at the spectacular golden hour as the sun sets over vast desert landscapes, painting the sky in brilliant oranges, purples, and reds that seem almost otherworldly. This arid wilderness showcases nature's resilience and beauty through unique rock formations, ancient cacti, and an endless horizon that stretches beyond imagination. The desert's silence and solitude offer profound moments of reflection and a deep connection with the Earth's raw, untouched magnificence.",
+    "id": 86
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800",
+    "favicon": "https://www.instagram.com/favicon.ico",
+    "title": "Lake Reflection",
+    "description": "Discover the perfect mirror of nature where crystal-clear lake waters create stunning reflections of surrounding mountains, clouds, and forests, doubling the beauty of every landscape. This serene aquatic environment provides ideal conditions for photography, contemplation, and peaceful moments away from life's chaos. The still waters host diverse wildlife and offer recreational activities like kayaking, fishing, and lakeside camping under star-filled skies that reflect perfectly in the glassy surface.",
+    "id": 87
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.linkedin.com/favicon.ico",
+    "title": "Professional Growth",
+    "description": "Career development through networking, skill building, and mentorship opportunities. Build connections and achieve your professional goals in collaborative environments.",
+    "id": 88
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.amazon.com/favicon.ico",
+    "title": "Shopping Paradise",
+    "description": "Enter a world of endless retail possibilities where cutting-edge products meet unbeatable prices and customer satisfaction is the top priority. This shopping destination features everything from innovative gadgets and fashion-forward clothing to home essentials and rare collectibles. With lightning-fast delivery, excellent customer service, and a vast marketplace that connects buyers with sellers worldwide, this platform has revolutionized how we discover, compare, and purchase products that enhance our daily lives.",
+    "id": 89
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.reddit.com/favicon.ico",
+    "title": "Community Hub",
+    "description": "Join vibrant online communities sharing knowledge and experiences. Connect with diverse voices and find meaningful discussions on virtually every topic imaginable.",
+    "id": 90
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.google.com/favicon.ico",
+    "title": "Tech Innovation Hub",
+    "description": "Dive into the cutting-edge world of technology where artificial intelligence meets human creativity. Discover groundbreaking innovations that are reshaping industries, from machine learning algorithms to quantum computing breakthroughs. This hub connects visionaries, developers, and entrepreneurs who are building the future of digital transformation and creating solutions that will impact millions of lives worldwide.",
+    "id": 91
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.youtube.com/favicon.ico",
+    "title": "Mountain Adventure",
+    "description": "Breathtaking mountain peaks, crystal-clear alpine lakes, and panoramic vistas. Perfect escape for outdoor enthusiasts seeking adventure and tranquility in nature's untamed wilderness.",
+    "id": 92
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.spotify.com/favicon.ico",
+    "title": "Forest Serenity",
+    "description": "Immerse yourself in the peaceful sanctuary of ancient forests where time seems to stand still and nature's symphony creates the perfect backdrop for meditation. These verdant woodlands offer winding paths through towering trees, hidden clearings filled with wildflowers, and the gentle sound of rustling leaves. Find inner peace as you breathe in the fresh forest air and discover the healing power of nature's embrace.",
+    "id": 93
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+    "favicon": "https://www.netflix.com/favicon.ico",
+    "title": "Urban Skyline",
+    "description": "Modern cityscapes with architectural marvels and dazzling lights. Experience unlimited opportunities for exploration, career growth, and cultural adventures in metropolitan life.",
+    "id": 94
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.github.com/favicon.ico",
+    "title": "Ocean Waves",
+    "description": "Therapeutic rhythm of endless waves crashing against pristine shores. Ultimate relaxation and spiritual renewal through the ocean's timeless dance and salt breeze.",
+    "id": 95
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800",
+    "favicon": "https://www.twitter.com/favicon.ico",
+    "title": "Desert Sunset",
+    "description": "Marvel at the spectacular golden hour as the sun sets over vast desert landscapes, painting the sky in brilliant oranges, purples, and reds that seem almost otherworldly. This arid wilderness showcases nature's resilience and beauty through unique rock formations, ancient cacti, and an endless horizon that stretches beyond imagination. The desert's silence and solitude offer profound moments of reflection and a deep connection with the Earth's raw, untouched magnificence.",
+    "id": 96
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800",
+    "favicon": "https://www.instagram.com/favicon.ico",
+    "title": "Lake Reflection",
+    "description": "Discover the perfect mirror of nature where crystal-clear lake waters create stunning reflections of surrounding mountains, clouds, and forests, doubling the beauty of every landscape. This serene aquatic environment provides ideal conditions for photography, contemplation, and peaceful moments away from life's chaos. The still waters host diverse wildlife and offer recreational activities like kayaking, fishing, and lakeside camping under star-filled skies that reflect perfectly in the glassy surface.",
+    "id": 97
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    "favicon": "https://www.linkedin.com/favicon.ico",
+    "title": "Professional Growth",
+    "description": "Career development through networking, skill building, and mentorship opportunities. Build connections and achieve your professional goals in collaborative environments.",
+    "id": 98
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    "favicon": "https://www.amazon.com/favicon.ico",
+    "title": "Shopping Paradise",
+    "description": "Enter a world of endless retail possibilities where cutting-edge products meet unbeatable prices and customer satisfaction is the top priority. This shopping destination features everything from innovative gadgets and fashion-forward clothing to home essentials and rare collectibles. With lightning-fast delivery, excellent customer service, and a vast marketplace that connects buyers with sellers worldwide, this platform has revolutionized how we discover, compare, and purchase products that enhance our daily lives.",
+    "id": 99
+  },
+  {
+    "url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800",
+    "favicon": "https://www.reddit.com/favicon.ico",
+    "title": "Community Hub",
+    "description": "Join vibrant online communities sharing knowledge and experiences. Connect with diverse voices and find meaningful discussions on virtually every topic imaginable.",
+    "id": 100
+  }
+]
