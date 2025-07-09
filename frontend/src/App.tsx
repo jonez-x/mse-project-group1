@@ -1,24 +1,17 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import SwipeCards, { type CardType } from "./components/SwipeCards";
 import entriesData from "./assets/entries.json"; // Adjust the path as needed
+import greenHeartImg from "./assets/img/greenheart.png";
+import redx from "./assets/img/redx.png";
 
-// Common fill words to filter out
-const fillWords = new Set([
-  'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 
-  'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 
-  'after', 'above', 'below', 'between', 'among', 'within', 'without',
-  'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 
-  'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should',
-  'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 
-  'they', 'me', 'him', 'her', 'us', 'them'
-]);
 
 const App = () => {
   const [cards, setCards] = useState<CardType[]>([]);
   const [showCards, setShowCards] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchWords, setSearchWords] = useState<Set<string>>(new Set());
-  const [showSearchWords, setShowSearchWords] = useState(false);
+  const [likedCards, setLikedCards] = useState<CardType[]>([]);
+  const [dislikedCards, setDislikedCards] = useState<CardType[]>([]);
   const cardsToShow = 7; // Variable to control how many cards to show
   const [nextCardIndex, setNextCardIndex] = useState(cardsToShow); // Start after initial cards
   const [key, setKey] = useState(0); // Force re-render key
@@ -26,7 +19,15 @@ const App = () => {
   // Add one new card when a card is removed
   useEffect(() => {
     if (showCards && cards.length < cardsToShow) {
-      const newCard = entriesData[nextCardIndex % entriesData.length];
+      const rawCard = entriesData[nextCardIndex % entriesData.length];
+      const newCard: CardType = {
+        ...rawCard,
+        word_dictionary: rawCard.word_dictionary 
+          ? Object.fromEntries(
+              Object.entries(rawCard.word_dictionary).filter(([, value]) => value !== undefined)
+            ) as Record<string, number>
+          : undefined
+      };
       setCards(prevCards => [newCard, ...prevCards]); // Add to bottom of stack
       setNextCardIndex(prev => prev + 1);
     }
@@ -35,21 +36,19 @@ const App = () => {
   const handleSearch = () => {
     // Only search if there's a query or it's the initial search
     if (searchQuery.trim() || !showCards) {
-      // Process search words from the current query
-      const currentWords = searchQuery
-        .trim()
-        .toLowerCase()
-        .split(/\s+/)
-        .filter(word => word.length > 0 && !fillWords.has(word));
+      // Get first N entries based on cardsToShow and clean the data
+      const rawCards = entriesData.slice(0, cardsToShow);
+      const newCards = rawCards.map(rawCard => ({
+        ...rawCard,
+        word_dictionary: rawCard.word_dictionary 
+          ? Object.fromEntries(
+              Object.entries(rawCard.word_dictionary).filter(([, value]) => value !== undefined)
+            ) as Record<string, number>
+          : undefined
+      } as CardType)).reverse();
       
-      const currentWordsSet = new Set(currentWords);
-      setSearchWords(currentWordsSet);
-      
-      // Get first N entries based on cardsToShow
-      const newCards = entriesData.slice(0, cardsToShow).reverse();
       setCards(newCards);
       setShowCards(true);
-      setShowSearchWords(true); // Show search words after search is performed
       setKey(prev => prev + 1); // Force SwipeCards to re-render
       setNextCardIndex(cardsToShow); // Reset to start adding from next card
     }
@@ -63,57 +62,141 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-100 px-4">
-      {/* Glassy Search Field */}
-      <div className="relative w-full max-w-md mb-8 pl-12">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Search for anything..."
-          className="w-full h-14 pl-6 pr-14 rounded-full bg-white/70 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent text-gray-800 placeholder-gray-500 transition-all duration-300"
-        />
-        {/* Search Icon Button */}
-        <button
-          onClick={handleSearch}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 rounded-full bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-colors duration-200 flex items-center justify-center group"
-        >
-          <svg 
-            className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-200" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
+    <div className="min-h-screen flex flex-col bg-neutral-100">
+      {/* Top Search Bar */}
+      <div className="flex justify-center p-4 bg-neutral/50 backdrop-blur-sm border-b border-white/20">
+        <div className="relative w-full max-w-md pl-12">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Search for anything..."
+            className="w-full h-14 pl-6 pr-14 rounded-full bg-neutral/70 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent text-gray-800 placeholder-gray-500 transition-all duration-300"
+          />
+          {/* Search Icon Button */}
+          <button
+            onClick={handleSearch}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 rounded-full bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-colors duration-200 flex items-center justify-center group"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
-            />
-          </svg>
-        </button>
+            <svg 
+              className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-200" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {/* Search Words Display */}
-      {showSearchWords && searchWords.size > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4 max-w-md">
-          {Array.from(searchWords).map((word, index) => (
-            <span
-              key={`${word}-${index}`}
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 border border-blue-200"
-            >
-              {word}
-            </span>
-          ))}
+      {/* Main Content Area */}
+      <div className="flex-1 flex justify-center items-start pt-4">
+        {/* Disliked Cards - Left Side */}
+        <div className="w-64 lg:w-80 xl:w-96 2xl:w-[30rem] p-4 overflow-y-auto justify-center ">
+          {showCards && (
+            <div className="flex justify-center mb-4">
+              <img src={redx} alt="Disliked" className="h-8" />
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
+            <AnimatePresence>
+              {dislikedCards.map((card) => (
+                <motion.div
+                  key={`disliked-${card.id}`}
+                  className="break-inside-avoid"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  <div 
+                    className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                    onClick={() => window.open(card.url, '_blank')}
+                  >
+                    <img
+                      src={card.url}
+                      alt={card.title || "Disliked card"}
+                      className="w-full h-32 object-cover"
+                    />
+                    <div className="p-3">
+                      <h4 className="text-sm font-medium text-gray-800 truncate">
+                        {card.title || "Untitled"}
+                      </h4>
+                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                        {card.description || card.url}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
         </div>
-      )}
 
-      {showCards && (
-        <div className="flex justify-center">
-          <SwipeCards key={key} cards={cards} setCards={setCards} />
+        {/* Main Content - Center */}
+        <div className="w-96 flex flex-col items-center justify-start pt-4 pr-12 ">
+          {showCards && (
+            <div className="flex justify-center">
+              <SwipeCards 
+                key={key} 
+                cards={cards} 
+                setCards={setCards}
+                onLike={(card) => setLikedCards(prev => [card, ...prev])}
+                onDislike={(card) => setDislikedCards(prev => [card, ...prev])}
+              />
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Liked Cards - Right Side */}
+        <div className="w-64 lg:w-80 xl:w-96 2xl:w-[28rem] p-4 overflow-y-auto ">
+          {showCards && (
+            <div className="flex justify-center mb-4">
+              <img src={greenHeartImg} alt="Liked" className="h-8" />
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
+            <AnimatePresence>
+              {likedCards.map((card) => (
+                <motion.div
+                  key={`liked-${card.id}`}
+                  className="break-inside-avoid"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  <div 
+                    className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                    onClick={() => window.open(card.url, '_blank')}
+                  >
+                    <img
+                      src={card.url}
+                      alt={card.title || "Liked card"}
+                      className="w-full h-32 object-cover"
+                    />
+                    <div className="p-3">
+                      <h4 className="text-sm font-medium text-gray-800 truncate">
+                        {card.title || "Untitled"}
+                      </h4>
+                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                        {card.description || card.url}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
