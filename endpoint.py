@@ -6,14 +6,12 @@ from datetime import datetime
 import logging
 import uvicorn
 
-
-
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Tübingen Search API", 
+    title="Tübingen Search API",
     version="1.0.0"
 )
 
@@ -26,25 +24,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Pydantic models for request/response
 class SearchResponse(BaseModel):
     results: List[str]
+
 
 class CrawlRequest(BaseModel):
     urls: List[str]
     max_pages: Optional[int] = 1000
 
+
 class BatchSearchRequest(BaseModel):
     queries: List[str]
+
 
 # Placeholder functions that need to be implemented
 def crawl(frontier, index):
     # TODO: Implement crawler functionality
     pass
 
+
 def index(doc, index_path):
     # TODO: Implement indexing functionality
     pass
+
 
 def retrieve(query, index_path):
     # TODO: Implement retrieval logic
@@ -55,9 +59,11 @@ def retrieve(query, index_path):
         f"Result 3 for '{query}'"
     ]
 
+
 def batch(results):
-    #TODO: Implement batch processing
+    # TODO: Implement batch processing
     pass
+
 
 @app.get("/")
 async def root():
@@ -74,6 +80,7 @@ async def root():
         }
     }
 
+
 @app.get("/search", response_model=SearchResponse)
 async def search(q: str = Query(..., min_length=1, description="Search query")) -> SearchResponse:
     """
@@ -84,10 +91,10 @@ async def search(q: str = Query(..., min_length=1, description="Search query")) 
     """
     try:
         logger.info(f"Received search query: {q}")
-        
+
         # TODO: Replace with actual retrieval logic when crawler/retriever is implemented
         # For now, return simple test results that match frontend expectations
-        
+
         # Simple test logic for frontend testing - REMOVE WHEN IMPLEMENTING REAL SEARCH
         if q == "result1":
             return SearchResponse(results=["result1"])
@@ -95,14 +102,15 @@ async def search(q: str = Query(..., min_length=1, description="Search query")) 
             return SearchResponse(results=["result2"])
         elif q == "result3":
             return SearchResponse(results=["result3"])
-        
+
         # Default mock results
         results = retrieve(q, index_path="data/index")
         return SearchResponse(results=results)
-        
+
     except Exception as e:
         logger.error(f"Error processing search query '{q}': {str(e)}")
         raise HTTPException(status_code=500, detail="Search failed")
+
 
 @app.post("/crawl")
 async def start_crawl(request: CrawlRequest) -> Dict[str, Any]:
@@ -114,26 +122,27 @@ async def start_crawl(request: CrawlRequest) -> Dict[str, Any]:
     """
     try:
         logger.info(f"Starting crawl with {len(request.urls)} seed URLs")
-        
+
         # TODO: Implement actual crawling
         # For now, return success message
         frontier = {
             "urls": request.urls,
             "max_pages": request.max_pages
         }
-        
+
         # crawl(frontier, "data/index")  # Uncomment once it is implemented
-        
+
         return {
             "message": "Crawling started",
             "seed_urls": request.urls,
             "max_pages": request.max_pages,
             "status": "started"
         }
-        
+
     except Exception as e:
         logger.error(f"Error starting crawl: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to start crawling")
+
 
 @app.post("/batch-search")
 async def batch_search(request: BatchSearchRequest):
@@ -145,21 +154,22 @@ async def batch_search(request: BatchSearchRequest):
     """
     try:
         logger.info(f"Processing batch search with {len(request.queries)} queries")
-        
+
         # TODO: Implement actual batch processing
         results = {}
         for i, query in enumerate(request.queries, 1):
             results[f"query_{i}"] = retrieve(query, "data/index")
-        
+
         return {
             "message": "Batch search completed",
             "num_queries": len(request.queries),
             "results": results
         }
-        
+
     except Exception as e:
         logger.error(f"Error in batch search: {str(e)}")
         raise HTTPException(status_code=500, detail="Batch search failed")
+
 
 @app.get("/health")
 async def health_check():
@@ -170,6 +180,7 @@ async def health_check():
         "version": "1.0.0",
         "message": "API is running",
     }
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

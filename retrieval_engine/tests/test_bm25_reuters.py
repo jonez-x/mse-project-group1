@@ -1,58 +1,85 @@
 import logging
+import nltk
+import pytest
 import time
+from nltk.corpus import reuters
 from typing import List
 
-import pytest
-import nltk
-from nltk.corpus import reuters
-
-from retrieval_pipeline.bm25_indexer import BM25Indexer
-
+# TODO: find a workaround for the relative import issue
 try:
-    nltk.data.find("corpora/reuters.zip")
-except LookupError:
-    nltk.download("reuters")
+    from src.retrieval_pipeline.bm25_indexer import BM25Indexer
+except ImportError:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+    from retrieval_pipeline.bm25_indexer import BM25Indexer
 
 
-LOGGER = logging.getLogger(__name__)
+
+def _load_reuters():
+    """
+    Helper function to ensure the Reuters corpus is available.
+    Loads the corpus if it is not already downloaded.
+    """
+    try:
+        nltk.data.find("corpora/reuters")
+    except LookupError:
+        nltk.download(corpus="reuters")
+
+
+# Initialize the logger
+LOGGER = logging.getLogger(name=__name__)
 
 
 @pytest.fixture(scope="session")
 def reuters_docs() -> List[str]:
+    """Load a subset of Reuters corpus documents for testing."""
     files = reuters.fileids()[:10000]
-    return [reuters.raw(fid) for fid in files]
+    return [reuters.raw(fileids=fid) for fid in files]
 
 
 def _log_results(query: str, hits: List[int], docs: List[str], elapsed: float) -> None:
+    """Log query results with timing information."""
     LOGGER.info("Query: %s | %.3f ms | top=%d", query, elapsed * 1000, len(hits))
-    for rank, idx in enumerate(hits[0][:5], 1):
+    for rank, idx in enumerate(iterable=hits[0][:5], start=1):
         snippet = " ".join(docs[idx].split()[:25])
         LOGGER.info("%2d. doc[%d]: %s…", rank, idx, snippet)
 
 
 def test_bm25_ranking(reuters_docs):
-    bm25 = BM25Indexer().fit(reuters_docs)
+    """Test BM25 indexer ranking functionality with oil prices query."""
+    # Initialize and fit the BM25 indexer to the Reuters corpus
+    bm25 = BM25Indexer()
+    bm25 = bm25.fit(docs=reuters_docs)
 
+    # Query for oil prices and measure performance
     start = time.perf_counter()
-    hits = bm25.query("oil prices", top_n=20)
+    hits = bm25.query(text="oil prices", top_n=20)
     duration = time.perf_counter() - start
 
-    _log_results("oil prices", hits, reuters_docs, duration)
+    _log_results(query="oil prices", hits=hits, docs=reuters_docs, elapsed=duration)
 
+    # Verify that results contain relevant documents
     assert any("oil" in reuters_docs[idx].lower() for idx in hits[0]), "Expected 'oil' in top results"
 
 
 def test_pickle_roundtrip(reuters_docs, tmp_path):
-    bm25 = BM25Indexer().fit(reuters_docs)
+    """Test serialization and deserialization of BM25 indexer."""
+    # Train indexer and save to disk
+    bm25 = BM25Indexer()
+    bm25 = bm25.fit(docs=reuters_docs)
 
     pkl_path = tmp_path / "bm25_reuters.pkl"
-    bm25.save(pkl_path)
-    loaded = BM25Indexer.load(pkl_path)
+    bm25.save(path=pkl_path)
+    loaded = BM25Indexer.load(path=pkl_path)
 
+    # Test both original and loaded indexers
     for retriever, label in [(bm25, "orig"), (loaded, "loaded")]:
         start = time.perf_counter()
-        hits = retriever.query("federal reserve", 10)
+        hits = retriever.query(text="federal reserve", top_n=10)
         elapsed = time.perf_counter() - start
-        _log_results(f"federal reserve ({label})", hits, reuters_docs, elapsed)
+        _log_results(query=f"federal reserve ({label})", hits=hits, docs=reuters_docs, elapsed=elapsed)
 
-    assert bm25.query("federal reserve", 10) == loaded.query("federal reserve", 10)
+    # Verify identical results from both indexers
+    assert bm25.query(text="federal reserve", top_n=10) == loaded.query(text="federal reserve", top_n=10)
