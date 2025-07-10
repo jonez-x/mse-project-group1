@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef, useImperativeHandle } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 
 type CardType = {
@@ -19,7 +19,34 @@ type SwipeCardsProps = {
   onDislike: (card: CardType) => void;
 };
 
-const SwipeCards = ({ cards, setCards, onLike, onDislike }: SwipeCardsProps) => {
+export type SwipeCardsRef = {
+  swipeLeft: () => void;
+  swipeRight: () => void;
+};
+
+const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards, onLike, onDislike }, ref) => {
+  const swipeLeft = () => {
+    if (cards.length > 0) {
+      const topCard = cards[cards.length - 1];
+      onDislike(topCard);
+      setCards((prev) => prev.filter((card) => card.id !== topCard.id));
+    }
+  };
+
+  const swipeRight = () => {
+    if (cards.length > 0) {
+      const topCard = cards[cards.length - 1];
+      window.open(topCard.url, '_blank'); // Open URL in new tab
+      onLike(topCard);
+      setCards((prev) => prev.filter((card) => card.id !== topCard.id));
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    swipeLeft,
+    swipeRight
+  }));
+
   return (
     <div
       className="relative h-[500px] w-[300px] grid place-items-center"
@@ -38,7 +65,7 @@ const SwipeCards = ({ cards, setCards, onLike, onDislike }: SwipeCardsProps) => 
       ))}
     </div>
   );
-};
+});
 
 type CardProps = CardType & {
   setCards: React.Dispatch<React.SetStateAction<CardType[]>>;

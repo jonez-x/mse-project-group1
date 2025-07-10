@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import SwipeCards, { type CardType } from "./components/SwipeCards";
+import SwipeCards, { type CardType, type SwipeCardsRef } from "./components/SwipeCards";
 import entriesData from "./assets/entries.json"; // Adjust the path as needed
 import greenHeartImg from "./assets/img/greenheart.png";
 import redx from "./assets/img/redx.png";
+import leftarrow from "./assets/img/leftarrow.png";
+import rightarrow from "./assets/img/rightarrow.png";
 
 
 const App = () => {
@@ -15,6 +17,7 @@ const App = () => {
   const cardsToShow = 7; // Variable to control how many cards to show
   const [nextCardIndex, setNextCardIndex] = useState(cardsToShow); // Start after initial cards
   const [key, setKey] = useState(0); // Force re-render key
+  const swipeCardsRef = useRef<SwipeCardsRef>(null);
 
   // Add one new card when a card is removed
   useEffect(() => {
@@ -61,11 +64,41 @@ const App = () => {
     }
   };
 
+  const handleDislikeClick = () => {
+    swipeCardsRef.current?.swipeLeft();
+  };
+
+  const handleLikeClick = () => {
+    swipeCardsRef.current?.swipeRight();
+  };
+
+  // Add keyboard event listener for arrow keys
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!showCards) return; // Only allow swiping when cards are shown
+      
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        handleDislikeClick();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        handleLikeClick();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showCards]); // Re-run effect when showCards changes
+
   return (
     <div className="min-h-screen flex flex-col bg-neutral-100">
       {/* Top Search Bar */}
       <div className="flex justify-center p-4 bg-neutral/50 backdrop-blur-sm border-b border-white/20">
-        <div className="relative w-full max-w-md pl-12">
+        <div className="relative w-full max-w-md">
           <input
             type="text"
             value={searchQuery}
@@ -90,7 +123,7 @@ const App = () => {
                 strokeLinejoin="round" 
                 strokeWidth={2} 
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
-              />
+              /> 
             </svg>
           </button>
         </div>
@@ -99,7 +132,7 @@ const App = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex justify-center items-start pt-4">
         {/* Disliked Cards - Left Side */}
-        <div className="w-64 lg:w-80 xl:w-96 2xl:w-[30rem] p-4 overflow-y-auto justify-center ">
+        <div className="w-96 p-4 overflow-y-auto max-h-[calc(100vh-120px)]">
           {showCards && (
             <div className="flex justify-center mb-4">
               <img src={redx} alt="Disliked" className="h-8" />
@@ -141,10 +174,11 @@ const App = () => {
         </div>
 
         {/* Main Content - Center */}
-        <div className="w-96 flex flex-col items-center justify-start pt-4 pr-12 ">
+        <div className="w-96 mr-14">
           {showCards && (
             <div className="flex justify-center">
               <SwipeCards 
+                ref={swipeCardsRef}
                 key={key} 
                 cards={cards} 
                 setCards={setCards}
@@ -153,10 +187,28 @@ const App = () => {
               />
             </div>
           )}
+          
+          {/* Action Buttons */}
+          {showCards && (
+            <div className="flex justify-center gap-32 mt-10 ml-14">
+              <button 
+                onClick={handleDislikeClick}
+                className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm border-2 border-red-200/70 shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200"
+              >
+                <img src={leftarrow} alt="dislike button" className="w-12 opacity-70 pr-2" />
+              </button>
+              <button 
+                onClick={handleLikeClick}
+                className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm border-2 border-green-200/70 shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200"
+              >
+                <img src={rightarrow} alt="like button" className="w-12 opacity-70 pl-2" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Liked Cards - Right Side */}
-        <div className="w-64 lg:w-80 xl:w-96 2xl:w-[28rem] p-4 overflow-y-auto ">
+        <div className="w-96 p-4 overflow-y-auto max-h-[calc(100vh-120px)]">
           {showCards && (
             <div className="flex justify-center mb-4">
               <img src={greenHeartImg} alt="Liked" className="h-8" />
