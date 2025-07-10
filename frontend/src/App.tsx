@@ -132,13 +132,14 @@ const App = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex justify-center items-start pt-4">
         {/* Disliked Cards - Left Side */}
-        <div className="w-96 p-4 overflow-y-auto max-h-[calc(100vh-120px)]">
-          {showCards && (
-            <div className="flex justify-center mb-4">
-              <img src={redx} alt="Disliked" className="h-8" />
-            </div>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
+        <div className="w-96 p-4 overflow-y-auto max-h-[calc(100vh-120px)]" style={{ direction: 'rtl' }}>
+          <div style={{ direction: 'ltr' }}>
+            {showCards && (
+              <div className="flex justify-center mb-4">
+                <img src={redx} alt="Disliked" className="h-8" />
+              </div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
             <AnimatePresence>
               {dislikedCards.map((card) => (
                 <motion.div
@@ -170,6 +171,7 @@ const App = () => {
                 </motion.div>
               ))}
             </AnimatePresence>
+            </div>
           </div>
         </div>
 

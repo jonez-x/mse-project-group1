@@ -25,20 +25,50 @@ export type SwipeCardsRef = {
 };
 
 const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards, onLike, onDislike }, ref) => {
+  const animateSwipe = (direction: 'left' | 'right', topCard: CardType) => {
+    const cardElement = document.querySelector(`[data-card-id="${topCard.id}"]`) as HTMLElement;
+    if (cardElement) {
+      const distance = direction === 'left' ? -150 : 150;
+      const rotation = direction === 'left' ? -30 : 30;
+      
+      // Animate the card out
+      cardElement.style.transform = `translateX(${distance}px) rotate(${rotation}deg)`;
+      cardElement.style.opacity = '0.3';
+      cardElement.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+      
+      // Remove card after animation
+      setTimeout(() => {
+        if (direction === 'left') {
+          onDislike(topCard);
+        } else {
+          window.open(topCard.url, '_blank');
+          onLike(topCard);
+        }
+        setCards((prev) => prev.filter((card) => card.id !== topCard.id));
+      }, 300);
+    } else {
+      // Fallback if element not found
+      if (direction === 'left') {
+        onDislike(topCard);
+      } else {
+        window.open(topCard.url, '_blank');
+        onLike(topCard);
+      }
+      setCards((prev) => prev.filter((card) => card.id !== topCard.id));
+    }
+  };
+
   const swipeLeft = () => {
     if (cards.length > 0) {
       const topCard = cards[cards.length - 1];
-      onDislike(topCard);
-      setCards((prev) => prev.filter((card) => card.id !== topCard.id));
+      animateSwipe('left', topCard);
     }
   };
 
   const swipeRight = () => {
     if (cards.length > 0) {
       const topCard = cards[cards.length - 1];
-      window.open(topCard.url, '_blank'); // Open URL in new tab
-      onLike(topCard);
-      setCards((prev) => prev.filter((card) => card.id !== topCard.id));
+      animateSwipe('right', topCard);
     }
   };
 
@@ -104,6 +134,7 @@ const Card = ({ id, url, favicon, title, description, word_dictionary, setCards,
 
   return (
        <motion.div
+      data-card-id={id}
       className=" origin-bottom rounded-lg overflow-hidden relative flex flex-col justify-end bg-white shadow-lg hover:cursor-grab active:cursor-grabbing"
       style={{
         position: "absolute",
