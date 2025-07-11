@@ -4,8 +4,7 @@ import SwipeCards, { type CardType, type SwipeCardsRef } from "./components/Swip
 import entriesData from "./assets/entries.json"; // Adjust the path as needed
 import greenHeartImg from "./assets/img/greenheart.png";
 import redx from "./assets/img/redx.png";
-import leftarrow from "./assets/img/leftarrow.png";
-import rightarrow from "./assets/img/rightarrow.png";
+import logo from "./assets/img/logo.png";
 
 
 const App = () => {
@@ -95,9 +94,25 @@ const App = () => {
   }, [showCards]); // Re-run effect when showCards changes
 
   return (
+    
     <div className="min-h-screen flex flex-col bg-neutral-100">
+      {/* Header with Logo */}
+      <div className="flex justify-center p-6 bg-neutral-100 backdrop-blur-sm border-b border-white/30">
+        <img src={logo} alt="Logo" className="h-10" />
+      </div>
+
       {/* Top Search Bar */}
-      <div className="flex justify-center p-4 bg-neutral/50 backdrop-blur-sm border-b border-white/20">
+      <div className="flex justify-center items-center gap-6 p-4 bg-neutral/50 backdrop-blur-sm border-b border-white/20">
+        {/* Dislike Button */}
+        {showCards && (
+          <button 
+            onClick={handleDislikeClick}
+            className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm border-2 border-red-200/70 shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200"
+          >
+            <img src={redx} alt="dislike button" className="w-8 opacity-70" />
+          </button>
+        )}
+        
         <div className="relative w-full max-w-md">
           <input
             type="text"
@@ -127,18 +142,23 @@ const App = () => {
             </svg>
           </button>
         </div>
+
+        {/* Like Button */}
+        {showCards && (
+          <button 
+            onClick={handleLikeClick}
+            className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm border-2 border-green-200/70 shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200"
+          >
+            <img src={greenHeartImg} alt="like button" className="w-8 opacity-70" />
+          </button>
+        )}
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex justify-center items-start pt-4">
         {/* Disliked Cards - Left Side */}
-        <div className="w-96 p-4 overflow-y-auto max-h-[calc(100vh-120px)]" style={{ direction: 'rtl' }}>
+        <div className="w-96 p-4 overflow-y-auto max-h-[calc(100vh-200px)]" style={{ direction: 'rtl' }}>
           <div style={{ direction: 'ltr' }}>
-            {showCards && (
-              <div className="flex justify-center mb-4">
-                <img src={redx} alt="Disliked" className="h-8" />
-              </div>
-            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
             <AnimatePresence>
               {dislikedCards.map((card) => (
@@ -189,33 +209,10 @@ const App = () => {
               />
             </div>
           )}
-          
-          {/* Action Buttons */}
-          {showCards && (
-            <div className="flex justify-center gap-32 mt-10 ml-14">
-              <button 
-                onClick={handleDislikeClick}
-                className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm border-2 border-red-200/70 shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200"
-              >
-                <img src={leftarrow} alt="dislike button" className="w-12 opacity-70 pr-2" />
-              </button>
-              <button 
-                onClick={handleLikeClick}
-                className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm border-2 border-green-200/70 shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200"
-              >
-                <img src={rightarrow} alt="like button" className="w-12 opacity-70 pl-2" />
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Liked Cards - Right Side */}
-        <div className="w-96 p-4 overflow-y-auto max-h-[calc(100vh-120px)]">
-          {showCards && (
-            <div className="flex justify-center mb-4">
-              <img src={greenHeartImg} alt="Liked" className="h-8" />
-            </div>
-          )}
+        <div className="w-96 p-4 overflow-y-auto max-h-[calc(100vh-200px)]">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
             <AnimatePresence>
               {likedCards.map((card) => (

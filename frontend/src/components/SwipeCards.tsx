@@ -29,7 +29,7 @@ const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards
     const cardElement = document.querySelector(`[data-card-id="${topCard.id}"]`) as HTMLElement;
     if (cardElement) {
       const distance = direction === 'left' ? -150 : 150;
-      const rotation = direction === 'left' ? -30 : 30;
+      const rotation = direction === 'left' ? -15 : 15;
       
       // Animate the card out
       cardElement.style.transform = `translateX(${distance}px) rotate(${rotation}deg)`;
