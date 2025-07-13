@@ -1,77 +1,118 @@
+"""
+Tests for DenseRetriever using the Reuters corpus dataset.
+"""
 import logging
-import nltk
+import pickle
 import pytest
 import time
-import pickle
-from nltk.corpus import reuters
+from pathlib import Path
 from typing import List
+
+from test_utils import reuters_docs, log_query_results
 
 try:
     from src.retrieval_pipeline.dense_retriever import DenseRetriever
 except ImportError:
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
     from retrieval_pipeline.dense_retriever import DenseRetriever
 
-
-def _load_reuters():
-    """Ensure the Reuters corpus is available."""
-    try:
-        nltk.data.find("corpora/reuters")
-    except LookupError:
-        nltk.download("reuters")
-
-
+# Initialize the logger
 LOGGER = logging.getLogger(name=__name__)
 
 
-@pytest.fixture(scope="session")
-def reuters_docs() -> List[str]:
-    """Load a subset of Reuters corpus documents for testing."""
-    _load_reuters()
-    files = reuters.fileids()[:10000]
-    return [reuters.raw(fileids=fid) for fid in files]
-
-
-def _log_results(query: str, hits: List[tuple], elapsed: float) -> None:
-    """Log query results with timing information."""
-    LOGGER.info("Query: %s | %.3f ms | top=%d", query, elapsed * 1000, len(hits))
-    for rank, (idx, score, text) in enumerate(hits[:5], start=1):
-        snippet = " ".join(text.split()[:25])
-        LOGGER.info("%2d. doc[%d] (%.4f): %s…", rank, idx, score, snippet)
-
-
-def test_dense_ranking(reuters_docs):
+def test_dense_ranking(
+        reuters_docs: List[str],
+        search_term: str = "oil"
+) -> None:
     """Test DenseRetriever ranking functionality with oil prices query."""
+    # Initialize and fit the DenseRetriever to the Reuters corpus
     retriever = DenseRetriever()
-    retriever.fit(reuters_docs)
+    retriever = retriever.fit(documents=reuters_docs)
 
+    query = f"{search_term} prices"
+
+    # Query for oil prices and measure performance  
     start = time.perf_counter()
-    results = retriever.retrieve("oil prices", top_k=20)
+    results = retriever.retrieve(
+        query=query,
+        top_k=20
+    )
     duration = time.perf_counter() - start
 
-    _log_results("oil prices", results, duration)
+    # Log the query results
+    log_query_results(
+        query=query,
+        results=results,
+        elapsed=duration,
+        logger=LOGGER
+    )
 
-    assert any("oil" in text.lower() for _, _, text in results), "Expected 'oil' in top results"
+    # Verify that results contain relevant documents
+    assert any(search_term in text.lower() for _, _, text in results), f"Expected '{search_term}' in top results"
 
 
-def test_dense_pickle_roundtrip(reuters_docs, tmp_path):
+@pytest.mark.parametrize("search_term", [
+    # "oil",
+    "gold",
+    "stock",
+    "bank",
+    "trade"
+])
+def test_dense_ranking_multiple_terms(
+        reuters_docs: List[str],
+        search_term: str,
+) -> None:
+    """Test DenseRetriever ranking functionality with multiple search terms."""
+    test_dense_ranking(
+        reuters_docs=reuters_docs,
+        search_term=search_term
+    )
+
+
+def test_dense_pickle_roundtrip(
+        reuters_docs: List[str],
+        tmp_path: Path
+) -> None:
     """Test serialization and deserialization of DenseRetriever."""
+    # Train retriever and save to disk
     retriever = DenseRetriever()
-    retriever.fit(reuters_docs)
+    retriever = retriever.fit(documents=reuters_docs)
 
     pkl_path = tmp_path / "dense_reuters.pkl"
+
+    # Save and load the retriever using pickle
     with open(pkl_path, "wb") as f:
         pickle.dump(retriever, f)
 
     with open(pkl_path, "rb") as f:
         loaded = pickle.load(f)
 
+    # Test both original and loaded retrievers
     for system, label in [(retriever, "orig"), (loaded, "loaded")]:
         start = time.perf_counter()
-        results = system.retrieve("federal reserve", top_k=10)
+        results = system.retrieve(
+            query="federal reserve",
+            top_k=10
+        )
         elapsed = time.perf_counter() - start
-        _log_results(f"federal reserve ({label})", results, elapsed)
 
-    assert retriever.retrieve("federal reserve", top_k=10) == loaded.retrieve("federal reserve", top_k=10)
+        log_query_results(
+            query=f"federal reserve ({label})",
+            results=results,
+            elapsed=elapsed,
+            logger=LOGGER
+        )
+
+    # Verify identical results from both retrievers
+    orig_results = retriever.retrieve(query="federal reserve", top_k=10)
+    loaded_results = loaded.retrieve(query="federal reserve", top_k=10)
+
+    # Compare results with tolerance for floating point precision
+    assert len(orig_results) == len(loaded_results), "Result counts should match"
+    for (orig_idx, orig_score, orig_text), (loaded_idx, loaded_score, loaded_text) in zip(orig_results, loaded_results):
+        assert orig_idx == loaded_idx, f"Document indices should match: {orig_idx} vs {loaded_idx}"
+        assert abs(orig_score - loaded_score) < 1e-6, f"Scores should be very close: {orig_score} vs {loaded_score}"
+        assert orig_text == loaded_text, f"Document texts should match"

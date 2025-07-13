@@ -12,7 +12,7 @@ class BM25Indexer:
     Attributes:
         k1 (float): Term frequency saturation parameter.
         b (float): Document length normalization parameter.
-        use_numpy (bool): Determines whether NumPy is utilized for matrix operations.
+        use_numpy (bool): Determines whether NumPy is used for matrix operations.
         doc_len (List[int]): Stores the length of each document in the corpus.
         avg_len (float): Represents the average document length in the corpus.
         doc_freq (Dict[str, int]): Maps terms to their document frequencies.
@@ -20,10 +20,12 @@ class BM25Indexer:
         terms (List[List[str]]): A list of tokenized documents.
     """
 
-    def __init__(self,
-                 k1: float = 1.5,
-                 b: float = 0.75,
-                 use_numpy: bool = True):
+    def __init__(
+            self,
+            k1: float = 1.5,
+            b: float = 0.75,
+            use_numpy: bool = True,
+    ):
         """
         Initialize the BM25 indexer.
 
@@ -45,8 +47,7 @@ class BM25Indexer:
         self.terms: List[List[str]] = []
         self._num_docs: int = 0
 
-    def _tokenize(self,
-                  text: str) -> List[str]:
+    def _tokenize(self, text: str) -> List[str]:
         """
         Helper method to tokenize a string into words.
 
@@ -58,8 +59,7 @@ class BM25Indexer:
 
         return re.findall(r"\w+", text.lower())
 
-    def fit(self,
-            docs: Sequence[str]) -> "BM25Indexer":
+    def fit(self, docs: Sequence[str]) -> "BM25Indexer":
         """
         Fit the indexer to a sequence of documents and compute neccessary statistics (like IDF and document lengths).
 
@@ -133,9 +133,11 @@ class BM25Indexer:
         self._matrix = mat
         self._vocab_idx = index
 
-    def _score_doc(self,
-                   tokens: List[str],
-                   doc_index: int) -> float:
+    def _score_doc(
+            self,
+            tokens: List[str],
+            doc_index: int,
+    ) -> float:
         """
         Calculate the BM25 score for a specific document given query tokens.
 
@@ -170,10 +172,12 @@ class BM25Indexer:
             )
         return score
 
-    def query(self,
-              text: str,
-              top_n: int = 10,
-              return_scores: bool = False) -> Tuple[List[int], List[float]]:
+    def query(
+            self,
+            text: str,
+            top_n: int = 10,
+            return_scores: bool = False,
+    ) -> Tuple[List[int], List[float]]:
         """
         Query the indexed documents and return the top-N most relevant documents.
 
