@@ -33,7 +33,7 @@ class DenseRetriever:
         if self.normalize:
             self._embeddings = self._l2_normalize(self._embeddings)
 
-    def query(self, query: str, top_k: int = 100) -> List[Tuple[int, float]]:
+    def query(self, query: str, top_k: int = 100) -> List[Tuple[int, float, str]]:
         """Return top‑k doc indices with cosine‑similarity scores."""
         query_vec = self.embed_query(query)
         return self.search_from_vector(query_vec, top_k)
@@ -55,7 +55,7 @@ class DenseRetriever:
 
     def search_from_vector(
         self, query_vec: np.ndarray, top_k: int = 100
-    ) -> List[Tuple[int, float]]:
+    ) -> List[Tuple[int, float, str]]:
         """Compute similarities from a *given* query vector (e.g. Rocchio PRF)."""
         if self._embeddings is None:
             raise ValueError("DenseRetriever not fitted – call .fit() first.")
@@ -63,7 +63,8 @@ class DenseRetriever:
         sims = np.dot(self._embeddings, query_vec)
         idx = np.argpartition(-sims, top_k)[:top_k]
         sorted_idx = idx[np.argsort(-sims[idx])]
-        return [(int(i), float(sims[i])) for i in sorted_idx]
+        return [(int(i), float(sims[i]), self._corpus[i]) for i in sorted_idx]
+
 
     @staticmethod
     def _l2_normalize(x: np.ndarray) -> np.ndarray:

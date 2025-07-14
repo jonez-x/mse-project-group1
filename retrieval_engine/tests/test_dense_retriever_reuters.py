@@ -6,18 +6,10 @@ import pickle
 import pytest
 import time
 from pathlib import Path
-from typing import List
+from typing import List, Sequence
 
 from test_utils import reuters_docs, log_query_results
-
-try:
-    from src.retrieval_pipeline.dense_retriever import DenseRetriever
-except ImportError:
-    import sys
-    from pathlib import Path
-
-    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-    from retrieval_pipeline.dense_retriever import DenseRetriever
+from retrieval_engine.dense_retriever import DenseRetriever
 
 # Initialize the logger
 LOGGER = logging.getLogger(name=__name__)
@@ -30,13 +22,13 @@ def test_dense_ranking(
     """Test DenseRetriever ranking functionality with oil prices query."""
     # Initialize and fit the DenseRetriever to the Reuters corpus
     retriever = DenseRetriever()
-    retriever = retriever.fit(documents=reuters_docs)
+    retriever.fit(corpus=reuters_docs)
 
     query = f"{search_term} prices"
 
     # Query for oil prices and measure performance  
     start = time.perf_counter()
-    results = retriever.retrieve(
+    results = retriever.query(
         query=query,
         top_k=20
     )
@@ -79,7 +71,7 @@ def test_dense_pickle_roundtrip(
     """Test serialization and deserialization of DenseRetriever."""
     # Train retriever and save to disk
     retriever = DenseRetriever()
-    retriever = retriever.fit(documents=reuters_docs)
+    retriever.fit(corpus=reuters_docs)
 
     pkl_path = tmp_path / "dense_reuters.pkl"
 
@@ -107,8 +99,8 @@ def test_dense_pickle_roundtrip(
         )
 
     # Verify identical results from both retrievers
-    orig_results = retriever.retrieve(query="federal reserve", top_k=10)
-    loaded_results = loaded.retrieve(query="federal reserve", top_k=10)
+    orig_results = retriever.query(query="federal reserve", top_k=10)
+    loaded_results = loaded.query(query="federal reserve", top_k=10)
 
     # Compare results with tolerance for floating point precision
     assert len(orig_results) == len(loaded_results), "Result counts should match"

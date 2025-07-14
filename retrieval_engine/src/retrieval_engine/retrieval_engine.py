@@ -1,10 +1,10 @@
 from __future__ import annotations
 from typing import List, Sequence, Tuple
-from bm25_retriever import BM25Retriever
-from dense_retriever import DenseRetriever
-from rrf import ReciprocalRankFusion
-from rocchio_prf import RocchioPRF
-from cross_encoder_reranker import CrossEncoderReRanker
+from .bm25_retriever import BM25Retriever
+from .dense_retriever import DenseRetriever
+from .rrf import ReciprocalRankFusion
+from .rocchio_prf import RocchioPRF
+from .cross_encoder_reranker import CrossEncoderReRanker
 
 
 class RetrievalEngine:
@@ -50,30 +50,35 @@ class RetrievalEngine:
     ) -> List[Tuple[str, float]]:
         """Führt die komplette Pipeline aus und liefert Top‑Dokumente mit Score."""
 
-        bm25_hits = self.bm25.query(query, top_k=bm25_top_k)
         dense_hits = self.dense.query(query, top_k=dense_top_k)
-        bm25_ids = [doc_id for doc_id, _ in bm25_hits]
-        dense_ids = [doc_id for doc_id, _ in dense_hits]
+        bm25_ids, _ = self.bm25.query(query, top_k=bm25_top_k)
+        dense_ids = [str(doc_id) for doc_id, _, _ in dense_hits]
+        bm25_ids_str = [str(doc_id) for doc_id in bm25_ids]
+
         fused = self.rrf.fuse(
-            [bm25_ids, dense_ids],
+            [bm25_ids_str, dense_ids],
             top_k=max(final_top_k, bm25_top_k, dense_top_k),
             return_scores=True,
         )
 
         if self.use_prf and fused:
             top_doc_ids = [doc_id for doc_id, _ in fused[:10]]
-            rel_vectors = self.dense.embed_documents(top_doc_ids)
+            top_doc_texts = [doc for doc_id, doc in self.bm25.get_docs([int(did) for did in top_doc_ids])]
+            rel_vectors = self.dense.embed_documents(top_doc_texts)
             query_vec = self.dense.embed_query(query)
             refined_vec = self.prf.refine(query_vec, rel_vectors)
+
             dense_hits_refined = self.dense.search_from_vector(refined_vec, top_k=dense_top_k)
+            dense_ids_refined = [str(doc_id) for doc_id, _, _ in dense_hits_refined]
+
             fused = self.rrf.fuse(
-                [bm25_ids, dense_hits_refined],
+                [bm25_ids_str, dense_ids_refined],
                 top_k=max(final_top_k, bm25_top_k, dense_top_k),
                 return_scores=True,
             )
 
         if self.use_rerank and fused:
-            doc_ids = [doc_id for doc_id, _ in fused[:final_top_k]]
+            doc_ids = [int(doc_id) for doc_id, _ in fused[:final_top_k]]
             docs_text = self.bm25.get_docs(doc_ids)
             reranked = self.reranker.rerank(query, docs_text, top_n=final_top_k)
             fused_dict = dict(fused)
