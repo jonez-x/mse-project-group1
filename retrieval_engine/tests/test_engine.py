@@ -42,7 +42,7 @@ def test_retrieval_engine_full(reuters_docs):
     """Full pipeline with PRF + Cross‑Encoder (slow, heavy)."""
     engine = RetrievalEngine(
         use_prf=True,
-        use_rerank=False,
+        use_rerank=True,
     )
     engine.fit(reuters_docs[:5000])  # speed!
 

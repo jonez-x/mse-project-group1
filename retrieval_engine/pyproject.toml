@@ -3,24 +3,37 @@ name = "hybrid-retrieval-pipeline"
 version = "0.1.0"
 description = "Hybrid retrieval pipeline (BM25, SBERT, RRF, Cross-Encoder)"
 authors = ["mse-team 1"]
-packages = [{ include = "retrieval_pipeline", from = "src" }]
+packages = [{ include = "retrieval_engine", from = "src" }]
 
+# ------------------------------------------------------------
+# Abhängigkeiten
+# ------------------------------------------------------------
 [tool.poetry.dependencies]
 python = "^3.10"
-numpy = "^1.26"
-pandas = "^2.2"
-scikit-learn = "^1.4"
-tqdm = "^4.66"
+
+# Core
+numpy            = "^1.26"
+pandas           = "^2.2"
+scikit-learn     = "^1.4"
+tqdm             = "^4.66"
+
+# NLP / Retriever
 sentence-transformers = "^2.7"
-transformers = "^4.42"
-torch = "^2.3"
+transformers          = "^4.42"
+
+torch       = { version = "2.3.0+cu121", source = "pytorch-cu121" }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2"
-black = "^24.3"
-isort = "^5.13"
-mypy = "^1.10"
-nltk = "^3.9.1"
+black  = "^24.3"
+isort  = "^5.13"
+mypy   = "^1.10"
+nltk   = "^3.9.1"
+
+[[tool.poetry.source]]
+name = "pytorch-cu121"
+url  = "https://download.pytorch.org/whl/cu121"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]
