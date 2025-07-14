@@ -4,60 +4,59 @@ import pytest
 import time
 import pickle
 from nltk.corpus import reuters
-from typing import List
+from typing import List, Tuple
+from retrieval_engine.dense_retriever import DenseRetriever
 
-try:
-    from src.retrieval_pipeline.dense_retriever import DenseRetriever
-except ImportError:
-    import sys
-    from pathlib import Path
-    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-    from retrieval_pipeline.dense_retriever import DenseRetriever
+LOGGER = logging.getLogger(__name__)
 
-
-def _load_reuters():
-    """Ensure the Reuters corpus is available."""
+def _load_reuters() -> None:
+    """Ensure the Reuters corpus is available locally."""
     try:
         nltk.data.find("corpora/reuters")
     except LookupError:
         nltk.download("reuters")
 
 
-LOGGER = logging.getLogger(name=__name__)
-
-
 @pytest.fixture(scope="session")
 def reuters_docs() -> List[str]:
-    """Load a subset of Reuters corpus documents for testing."""
+    """Return a list of raw Reuters documents (subset) for testing."""
     _load_reuters()
-    files = reuters.fileids()[:10000]
-    return [reuters.raw(fileids=fid) for fid in files]
+    files = reuters.fileids()[:10000]  # keep runtime & memory reasonable
+    return [reuters.raw(fid) for fid in files]
 
 
-def _log_results(query: str, hits: List[tuple], elapsed: float) -> None:
-    """Log query results with timing information."""
+def _log_results(
+    query: str,
+    hits: List[Tuple[int, float]],
+    elapsed: float,
+    docs: List[str],
+) -> None:
+    """Log the first few hits for manual inspection during test runs."""
     LOGGER.info("Query: %s | %.3f ms | top=%d", query, elapsed * 1000, len(hits))
-    for rank, (idx, score, text) in enumerate(hits[:5], start=1):
-        snippet = " ".join(text.split()[:25])
+    for rank, (idx, score) in enumerate(hits[:5], start=1):
+        snippet = " ".join(docs[idx].split()[:25])
         LOGGER.info("%2d. doc[%d] (%.4f): %s…", rank, idx, score, snippet)
 
 
 def test_dense_ranking(reuters_docs):
-    """Test DenseRetriever ranking functionality with oil prices query."""
+    """Validate that semantically relevant documents are retrieved."""
     retriever = DenseRetriever()
     retriever.fit(reuters_docs)
 
     start = time.perf_counter()
-    results = retriever.retrieve("oil prices", top_k=20)
+    results = retriever.query("oil prices", top_k=20)
     duration = time.perf_counter() - start
 
-    _log_results("oil prices", results, duration)
+    _log_results("oil prices", results, duration, reuters_docs)
 
-    assert any("oil" in text.lower() for _, _, text in results), "Expected 'oil' in top results"
+    # Ensure at least one of the returned docs actually contains the keyword.
+    assert any("oil" in reuters_docs[idx].lower() for idx, _ in results), (
+        "Expected at least one document mentioning 'oil' in top results",
+    )
 
 
 def test_dense_pickle_roundtrip(reuters_docs, tmp_path):
-    """Test serialization and deserialization of DenseRetriever."""
+    """Check that a fitted DenseRetriever can be pickled/unpickled loss‑lessly."""
     retriever = DenseRetriever()
     retriever.fit(reuters_docs)
 
@@ -70,8 +69,11 @@ def test_dense_pickle_roundtrip(reuters_docs, tmp_path):
 
     for system, label in [(retriever, "orig"), (loaded, "loaded")]:
         start = time.perf_counter()
-        results = system.retrieve("federal reserve", top_k=10)
+        results = system.query("federal reserve", top_k=10)
         elapsed = time.perf_counter() - start
-        _log_results(f"federal reserve ({label})", results, elapsed)
+        _log_results(f"federal reserve ({label})", results, elapsed, reuters_docs)
 
-    assert retriever.retrieve("federal reserve", top_k=10) == loaded.retrieve("federal reserve", top_k=10)
+    # The rankings (indices + scores) should be identical after the round‑trip.
+    assert retriever.query("federal reserve", top_k=10) == loaded.query(
+        "federal reserve", top_k=10
+    )
