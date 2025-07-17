@@ -16,13 +16,13 @@ class CrossEncoderReRanker:
 
     def __init__(
         self,
-        model_name: str = "cross-encoder/nli-distilroberta-base",
-        batch_size: int = 16,
+        model_name: str = "cross-encoder/nli-MiniLM2-L6-H768",
+        batch_size: int = 32,
         device: str | None = None,
         normalize: bool = True,
     ) -> None:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_name, torch_dtype=torch.float16)
         self.batch_size = batch_size
         self.normalize = normalize
 
