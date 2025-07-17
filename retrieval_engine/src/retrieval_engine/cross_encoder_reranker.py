@@ -27,8 +27,10 @@ class CrossEncoderReRanker:
         self.normalize = normalize
 
         if device is None:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.device = device
+            # device = "cuda" if torch.cuda.is_available() else "cpu"
+            device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        self.device = device        # TODO: compare "mps" vs "cpu" for Mac M1 Pro
+        print(f"Using device: {self.device}")
 
         self.model.to(self.device)
         self.model.eval()
@@ -50,17 +52,17 @@ class CrossEncoderReRanker:
         return torch.sigmoid(scores) if self.normalize else scores
 
     def rerank(
-        self,
-        query: str,
-        doc_pairs: Iterable[Tuple[str, str]],
-        top_n: int | None = None,
+            self,
+            query: str,
+            doc_pairs: Iterable[Tuple[str, str]],
+            top_n: int | None = None,
     ) -> List[Tuple[str, float]]:
         """Return *(doc_id, score)* sorted descending by score."""
         doc_ids, docs = zip(*doc_pairs) if doc_pairs else ([], [])
         scores: List[float] = []
 
         for i in range(0, len(docs), self.batch_size):
-            batch_docs = docs[i : i + self.batch_size]
+            batch_docs = docs[i:i + self.batch_size]
             batch_scores = self._score_batch(query, batch_docs)
             scores.extend(batch_scores.tolist())
 
