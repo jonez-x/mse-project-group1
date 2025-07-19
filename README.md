@@ -55,36 +55,43 @@ mse-project-group1/
 ## Installation
 
 1. If not already done, clone the repository:
-   ```bash
-   git clone git@github.com:jonez-x/mse-project-group1.git
-    cd mse-project-group1
-    ```
+```bash
+git clone git@github.com:jonez-x/mse-project-group1.git
+ cd mse-project-group1
+ ```
+   
+Alternatively, use HTTPS to clone the repository:
+```bash
+ git clone https://github.com/jonez-x/mse-project-group1.git
+ cd mse-project-group1
+ ```
+    
    
 2. Set up a virtual environment (optional but recommended):
-   ```bash
-   python3.13 -m venv .venv
-   source .venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
+```bash
+python3.13 -m venv .venv
+source .venv/bin/activate  # On Windows use `venv\Scripts\activate`
+```
    
 3. Install the required packages:
-   ```bash
-    pip install -r requirements.txt
-    ```
+```bash
+ pip install -r requirements.txt
+ ```
    
 ## Usage
 1. Start the FastAPI server:
-   ```bash
-   python endpoints.py
-   ```
+```bash
+python endpoints.py
+```
 
 To make sure the server is running correctly, you can visit http://localhost:8000/docs in your web browser to see the API documentation and test the endpoints.
 
 2. Start the frontend:
-   ```bash
-   cd frontend
-   npm install  
-   npm run dev
-   ```
+```bash
+cd frontend
+npm install  
+npm run dev
+```
    
 Then, to use the search engine, navigate to http://localhost:5173 in your web browser.
 
