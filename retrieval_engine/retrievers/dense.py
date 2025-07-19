@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from typing import List, Sequence, Tuple
+
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
@@ -8,11 +10,11 @@ class DenseRetriever:
     """SBERT‑basierter semantischer Retriever (Cosine Similarity)."""
 
     def __init__(
-        self,
-        model_name: str = "all-MiniLM-L6-v2",
-        normalize_embeddings: bool = True,
-        batch_size: int | None = None,
-        device: str | None = None,
+            self,
+            model_name: str = "all-MiniLM-L6-v2",
+            normalize_embeddings: bool = True,
+            batch_size: int | None = None,
+            device: str | None = None,
     ) -> None:
         self.model = SentenceTransformer(model_name, device=device)
         self.normalize = normalize_embeddings
@@ -54,7 +56,7 @@ class DenseRetriever:
         return self._l2_normalize(vecs) if self.normalize else vecs
 
     def search_from_vector(
-        self, query_vec: np.ndarray, top_k: int = 100
+            self, query_vec: np.ndarray, top_k: int = 100
     ) -> List[Tuple[int, float, str]]:
         """Compute similarities from a *given* query vector (e.g. Rocchio PRF)."""
         if self._embeddings is None:
@@ -65,10 +67,8 @@ class DenseRetriever:
         sorted_idx = idx[np.argsort(-sims[idx])]
         return [(int(i), float(sims[i]), self._corpus[i]) for i in sorted_idx]
 
-
     @staticmethod
     def _l2_normalize(x: np.ndarray) -> np.ndarray:
         norm = np.linalg.norm(x, axis=-1, keepdims=True)
         norm[norm == 0] = 1.0
         return x / norm
-

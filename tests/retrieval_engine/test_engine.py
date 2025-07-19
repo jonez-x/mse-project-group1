@@ -1,7 +1,7 @@
 import logging
 import time
 import pytest
-from retrieval_engine.retrieval_engine import RetrievalEngine
+from retrieval_engine.core.engine import RetrievalEngine
 from test_utils import reuters_docs, log_query_results
 import importlib.util
 

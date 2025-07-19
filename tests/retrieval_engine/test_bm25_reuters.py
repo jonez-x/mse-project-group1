@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List
 
 from test_utils import reuters_docs, log_query_results
-from retrieval_engine.bm25_retriever import BM25Retriever
+from retrieval_engine.retrievers.sparse import BM25Retriever
 
 # Initialize the logger
 LOGGER = logging.getLogger(name=__name__)

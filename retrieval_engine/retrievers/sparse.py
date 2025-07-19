@@ -1,9 +1,12 @@
 from __future__ import annotations
-from pathlib import Path
-from typing import Dict, List, Sequence, Tuple, Union
+
 import pickle
 import re
+from pathlib import Path
+from typing import Dict, List, Sequence, Tuple, Union
+
 import numpy as np
+
 
 class BM25Retriever:
     """Lightweight BM25 retriever with optional NumPy acceleration.
@@ -42,12 +45,10 @@ class BM25Retriever:
         self._matrix: np.ndarray | None = None
         self._vocab_idx: Dict[str, int] | None = None
 
-
     @staticmethod
     def _tokenize(text: str) -> List[str]:
         """Very simple tokenizer – lower‑case alphanumerics."""
         return re.findall(r"\w+", text.lower())
-
 
     def fit(self, docs: Sequence[str]) -> "BM25Retriever":
         """Index *docs* and pre‑compute IDF / matrix statistics."""
@@ -75,7 +76,6 @@ class BM25Retriever:
             self._build_matrix()
         return self
 
-
     def _build_matrix(self) -> None:
         vocab = list(self.idf)
         self._vocab_idx = {t: i for i, t in enumerate(vocab)}
@@ -90,10 +90,9 @@ class BM25Retriever:
                 col = self._vocab_idx[t]
                 idf = self.idf[t]
                 mat[row, col] = idf * (tf * (self.k1 + 1)) / (
-                    tf + self.k1 * (1 - self.b + self.b * L / self.avg_len)
+                        tf + self.k1 * (1 - self.b + self.b * L / self.avg_len)
                 )
         self._matrix = mat
-
 
     def _score_doc(self, query_tokens: List[str], doc_idx: int) -> float:
         L = self.doc_len[doc_idx]
@@ -107,12 +106,12 @@ class BM25Retriever:
                 continue
             tf = tf_counts.get(t, 0)
             score += idf * (tf * (self.k1 + 1)) / (
-                tf + self.k1 * (1 - self.b + self.b * L / self.avg_len)
+                    tf + self.k1 * (1 - self.b + self.b * L / self.avg_len)
             )
         return score
 
-
-    def query(self, text: str, *, top_k: int = 10, return_scores: bool = False) -> Tuple[List[int], List[float]]:  # noqa: D401,E501
+    def query(self, text: str, *, top_k: int = 10, return_scores: bool = False) -> Tuple[
+        List[int], List[float]]:  # noqa: D401,E501
         """Return *indices* of the ``top_k`` most relevant docs for *text*."""
         q_tokens = self._tokenize(text)
         if self.use_numpy and self._matrix is not None and self._vocab_idx is not None:
@@ -130,7 +129,6 @@ class BM25Retriever:
             return top_idx.tolist(), scores[top_idx].tolist()
         return top_idx.tolist(), []
 
-
     def get_docs(self, doc_ids: Sequence[int]) -> List[Tuple[str, str]]:
         """Return *[(doc_id, raw_text)]* for every ID in *doc_ids*.
 
@@ -139,10 +137,9 @@ class BM25Retriever:
         pairs: List[Tuple[str, str]] = []
         for doc_id in doc_ids:
             if not 0 <= doc_id < self._num_docs:
-                raise IndexError(f"DocID {doc_id} is out of range 0 … {self._num_docs-1}")
+                raise IndexError(f"DocID {doc_id} is out of range 0 … {self._num_docs - 1}")
             pairs.append((str(doc_id), self._corpus[doc_id]))
         return pairs
-
 
     def save(self, path: Union[str, Path]) -> None:
         """Pickle the entire retriever to *path*."""

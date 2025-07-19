@@ -6,10 +6,10 @@ import pickle
 import pytest
 import time
 from pathlib import Path
-from typing import List, Sequence
+from typing import List
 
 from test_utils import reuters_docs, log_query_results
-from retrieval_engine.dense_retriever import DenseRetriever
+from retrieval_engine.retrievers.dense import DenseRetriever
 
 # Initialize the logger
 LOGGER = logging.getLogger(name=__name__)

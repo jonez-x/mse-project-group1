@@ -26,12 +26,21 @@ mse-project-group1/
 │   └── ...
 │
 ├── retrieval_engine/
-│   ├── bm25_retriever.py
-│   ├── cross_encoder_reranker.py
-│   ├── dense_retriever.py
-│   ├── retrieval_engine.py
-│   ├── rocchio_prf.py
-│   └── rrf.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   └── engine.py                 # Main RetrievalEngine class
+│   ├── retrievers/
+│   │   ├── __init__.py
+│   │   ├── sparse.py                 # BM25 sparse retrieval
+│   │   └── dense.py                  # Dense semantic retrieval
+│   ├── fusion/
+│   │   ├── __init__.py
+│   │   └── rrf.py                    # Reciprocal Rank Fusion
+│   ├── enhancement/
+│   │   ├── __init__.py
+│   │   ├── prf.py                    # Pseudo Relevance Feedback
+│   │   └── reranking.py              # Cross-encoder reranking
+│   └── __init__.py
 │
 ├── tests/
 │   ├── retrieval_engine/
