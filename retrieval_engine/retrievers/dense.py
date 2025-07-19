@@ -5,6 +5,8 @@ from typing import List, Optional, Sequence, Tuple
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
+from retrieval_engine.docs.document_store import Document
+
 
 class DenseRetriever:
     """
@@ -19,6 +21,7 @@ class DenseRetriever:
         normalize (bool): Whether to L2-normalize embeddings for cosine similarity.
         batch_size (int | None): Batch size for encoding operations.
         _corpus (List[str]): The original document texts kept in memory.
+        _doc_store_map (List[Document]): The original Document instances.
         _embeddings (np.ndarray | None): Pre-computed document embeddings matrix.
     """
 
@@ -48,24 +51,25 @@ class DenseRetriever:
 
         # Internal state for fitted corpus
         self._corpus: List[str] = []
-        self._embeddings: Optional[np.ndarray] = None  # shape (N, dim)
+        self._doc_store_map: List[Document] = []
+        self._embeddings: Optional[np.ndarray] = None
 
-    def fit(self, corpus: Sequence[str]) -> None:
+    def fit(self, corpus: Sequence[Document]) -> None:
         """
         Encode the document corpus and store embeddings in memory for fast retrieval.
 
         Args:
-            corpus: A sequence of document strings to encode and index.
+            corpus: A sequence of Document objects to encode and index.
         """
-        # Store corpus for document retrieval
-        self._corpus = list(corpus)
+        self._doc_store_map = list(corpus)
+        self._corpus = [doc.to_text() for doc in self._doc_store_map]
 
         # Encode all documents using the sentence transformer model
         self._embeddings = self.model.encode(
             self._corpus,
             batch_size=self.batch_size or 32,  # If no default batch size is set, use 32
             convert_to_numpy=True,
-            show_progress_bar=False,
+            show_progress_bar=True,
         )
 
         # Normalize embeddings for cosine similarity if enabled
@@ -76,7 +80,7 @@ class DenseRetriever:
             self,
             query: str,
             top_k: int = 100
-    ) -> List[Tuple[int, float, str]]:
+    ) -> List[Tuple[int, float, Document]]:
         """
         Search for the most similar documents to a query string.
 
@@ -85,10 +89,10 @@ class DenseRetriever:
             top_k: Number of most similar documents to return (default: 100).
 
         Returns:
-            List[Tuple[int, float, str]]: A list of tuples containing:
+            List[Tuple[int, float, Document]]: A list of tuples containing:
                 - Document index (int)
                 - Cosine similarity score (float)
-                - Original document text (str)
+                - Original Document object
                 Sorted by similarity score in descending order.
         """
         query_vec = self.embed_query(query)
@@ -131,7 +135,7 @@ class DenseRetriever:
             self,
             query_vec: np.ndarray,
             top_k: int = 100
-    ) -> List[Tuple[int, float, str]]:
+    ) -> List[Tuple[str, float, Document]]:
         """
         Perform similarity search using a pre-computed query vector.
 
@@ -140,11 +144,11 @@ class DenseRetriever:
             top_k: Number of most similar documents to return (default: 100).
 
         Returns:
-            List[Tuple[int, float, str]]: A list of tuples containing:
-                - Document index (int)
+            List[Tuple[str, float, Document]]: A list of tuples containing:
+                - Document ID (str, typically URL)
                 - Cosine similarity score (float)
-                - Original document text (str)
-                Sorted by similarity score in descending order.
+                - Original Document object
+            Sorted by similarity score in descending order.
 
         Raises:
             ValueError: If the retriever has not been fitted with a corpus.
@@ -152,17 +156,14 @@ class DenseRetriever:
         if self._embeddings is None:
             raise ValueError("DenseRetriever not fitted with a corpus. Call fit() first.")
 
-        # Compute cosine similarities via dot product (assuming normalized vectors)
         sims = np.dot(self._embeddings, query_vec)
 
-        # Use argpartition for efficient top-k selection, then sort the top-k
         idx = np.argpartition(-sims, top_k)[:top_k]
         sorted_idx = idx[np.argsort(-sims[idx])]
 
-        # Return tuples of (doc_index, similarity_score, document_text)
-        return [(int(i), float(sims[i]), self._corpus[i]) for i in sorted_idx]
+        return [(self._doc_store_map[i].url, float(sims[i]), self._doc_store_map[i]) for i in sorted_idx]
 
-    def retrieve(self, query: str, top_k: int = 100) -> List[Tuple[int, float, str]]:
+    def retrieve(self, query: str, top_k: int = 100) -> List[Tuple[int, float, Document]]:
         """
         Alias for query method to maintain backward compatibility with tests.
 
@@ -171,10 +172,10 @@ class DenseRetriever:
             top_k: Number of most similar documents to return (default: 100).
 
         Returns:
-            List[Tuple[int, float, str]]: A list of tuples containing:
+            List[Tuple[int, float, Document]]: A list of tuples containing:
                 - Document index (int)
                 - Cosine similarity score (float)
-                - Original document text (str)
+                - Original Document object
                 Sorted by similarity score in descending order.
         """
         return self.query(query, top_k)

@@ -4,6 +4,7 @@ from typing import Iterable, List, Optional, Sequence, Tuple
 
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from retrieval_engine.docs.document_store import Document
 
 
 class CrossEncoderReRanker:
@@ -81,7 +82,7 @@ class CrossEncoderReRanker:
         Helper function to score a batch of documents against a query.
 
         This function encodes the query and documents into pairs, processes them through the model,
-        and returns the scores for each document in relationto the query.
+        and returns the scores for each document in relation to the query.
         The scores are either normalized or returned as raw logits depending on the `normalize` attribute.
 
         Args:
@@ -115,29 +116,28 @@ class CrossEncoderReRanker:
     def rerank(
             self,
             query: str,
-            doc_pairs: Iterable[Tuple[str, str]],
+            doc_pairs: Iterable[Document],
             top_n: Optional[int] = None,
     ) -> List[Tuple[str, float]]:
         """
-        Rerank a list of document pairs based on their relevance to a query and return the top N results.
+        Rerank a list of Document objects based on their relevance to a query and return the top N results.
 
         Args:
             query (str): The query string to score the documents against.
-            doc_pairs (Iterable[Tuple[str, str]]): An iterable of document pairs,
-                where each pair consists of a document ID and its text.
+            doc_pairs (Iterable[Document]): A list of Document instances.
             top_n (Optional[int]): Optional; if specified, limits the results to
                 the top N scored documents. If None, returns all scored documents.
 
         Returns:
             List[Tuple[str, float]]: A list of tuples where each tuple contains
-                a document ID and its score, sorted in descending order by score.
+                a document URL and its score, sorted in descending order by score.
         """
-        # Ensure doc_pairs is not empty
+        doc_pairs = list(doc_pairs)
         if not doc_pairs:
             return []
 
-        # Unzip document pairs into IDs and texts
-        doc_ids, docs = zip(*doc_pairs)
+        doc_ids = [doc.url for doc in doc_pairs]
+        docs = [doc.to_text() for doc in doc_pairs]
 
         # Initialize a list to hold scores
         scores: List[float] = []

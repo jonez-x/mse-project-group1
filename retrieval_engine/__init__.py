@@ -2,6 +2,7 @@ from .core import RetrievalEngine
 from .retrievers import BM25Retriever, DenseRetriever
 from .fusion import ReciprocalRankFusion
 from .enhancement import RocchioPRF, CrossEncoderReRanker
+from .docs import DocumentStore, Document
 
 __all__ = [
     "RetrievalEngine",
@@ -9,5 +10,7 @@ __all__ = [
     "DenseRetriever",
     "ReciprocalRankFusion",
     "RocchioPRF",
-    "CrossEncoderReRanker"
+    "CrossEncoderReRanker",
+    "DocumentStore",
+    "Document",
 ]

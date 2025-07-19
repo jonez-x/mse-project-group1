@@ -6,6 +6,9 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
+from tqdm import tqdm
+
+from retrieval_engine.docs.document_store import Document
 
 
 class BM25Retriever:
@@ -21,6 +24,7 @@ class BM25Retriever:
         b (float): Controls how much document length normalizes term frequency.
         use_numpy (bool): Whether to build a dense BM25 matrix for fast matrix-vector queries.
         _corpus (List[str]): The original document texts kept in memory for retrieval.
+        _doc_store_map (List[Document]): Original Document instances for result mapping.
         terms (List[List[str]]): Tokenized version of each document in the corpus.
         doc_len (List[int]): Length of each document in terms of token count.
         avg_len (float): Average document length across the corpus.
@@ -55,13 +59,12 @@ class BM25Retriever:
             use_numpy: Whether to build a dense BM25 matrix for fast matrix-vector queries.
                 Trades memory for query speed (default: True).
         """
-        # Set BM25 parameters
         self.k1: float = k1
         self.b: float = b
         self.use_numpy: bool = use_numpy
 
-        # Corpus‑level statistics – filled in the fit() method
         self._corpus: List[str] = []
+        self._doc_store_map: List[Document] = []
         self.terms: List[List[str]] = []
         self.doc_len: List[int] = []
         self.avg_len: float = 0.0
@@ -69,7 +72,6 @@ class BM25Retriever:
         self.idf: Dict[str, float] = {}
         self._num_docs: int = 0
 
-        # Matrix representation (optional)
         self._matrix: Optional[np.ndarray] = None
         self._vocab_idx: Optional[Dict[str, int]] = None
 
@@ -86,7 +88,7 @@ class BM25Retriever:
         """
         return re.findall(r"\w+", text.lower())
 
-    def fit(self, docs: Sequence[str]) -> "BM25Retriever":
+    def fit(self, docs: Sequence[Document]) -> "BM25Retriever":
         """
         Index the document collection and pre-compute BM25 statistics.
 
@@ -95,16 +97,18 @@ class BM25Retriever:
         representation for accelerated queries.
 
         Args:
-            docs: A sequence of document strings to index.
+            docs: A sequence of Document objects to index.
 
         Returns:
             BM25Retriever: Returns self for method chaining.
         """
-        # Keep corpus for later retrieval - ensures random access by integer ID
-        self._corpus = list(docs)
+        # Keep documents for retrieval
+        self._doc_store_map = list(docs)
 
-        # Tokenize all documents once for efficiency
-        self.terms = [self._tokenize(text=d) for d in self._corpus]
+        # Store corpus as pure text representation
+        self._corpus = [doc.to_text() for doc in self._doc_store_map]
+
+        self.terms = [self._tokenize(text=d) for d in tqdm(self._corpus, desc="Tokenizing")]
 
         # Compute basic document statistics
         self.doc_len = [len(toks) for toks in self.terms]
@@ -139,9 +143,7 @@ class BM25Retriever:
         # Initialize the BM25 matrix (documents x terms)
         mat = np.zeros((self._num_docs, len(vocab)), dtype=np.float32)
 
-        # Populate the matrix with BM25 scores
-        for row, toks in enumerate(self.terms):
-            # Count term frequencies in this document
+        for row, toks in tqdm(enumerate(self.terms), total=self._num_docs, desc="Building BM25 matrix"):
             counts: Dict[str, int] = {}
             for t in toks:
                 counts[t] = counts.get(t, 0) + 1
@@ -155,7 +157,7 @@ class BM25Retriever:
                 idf = self.idf[t]
                 # Apply BM25 formula: IDF * (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * L / avg_len))
                 mat[row, col] = idf * (tf * (self.k1 + 1)) / (
-                        tf + self.k1 * (1 - self.b + self.b * L / self.avg_len)
+                    tf + self.k1 * (1 - self.b + self.b * L / self.avg_len)
                 )
 
         self._matrix = mat
@@ -191,79 +193,70 @@ class BM25Retriever:
             tf = tf_counts.get(t, 0)
             # Apply BM25 formula
             score += idf * (tf * (self.k1 + 1)) / (
-                    tf + self.k1 * (1 - self.b + self.b * L / self.avg_len)
+                tf + self.k1 * (1 - self.b + self.b * L / self.avg_len)
             )
         return score
 
     def query(
             self,
-            text: str,
+            query: str,
             *,
             top_k: int = 10,
             return_scores: bool = False
-    ) -> Tuple[List[int], List[float]]:
+    ) -> Union[List[Document], List[Tuple[Document, float]]]:
         """
         Search for the most relevant documents given a query text. Tokenizes the query,
         computes BM25 scores, and returns the top-k documents sorted by relevance.
 
         Args:
-            text: The query string to search for.
+            query: The query string to search for.
             top_k: Number of top documents to return (default: 10).
             return_scores: Whether to return the BM25 scores along with indices (default: False).
 
         Returns:
-            Tuple[List[int], List[float]]: A tuple containing:
-                - List of document indices sorted by relevance (highest first)
-                - List of corresponding BM25 scores (empty if return_scores=False)
+            List[Document] or List[Tuple[Document, float]] depending on return_scores.
         """
-        # Tokenize the query using the same tokenizer as the corpus
-        q_tokens = self._tokenize(text)
+        q_tokens = self._tokenize(query)
 
-        # Use fast matrix-vector multiplication if available
         if self.use_numpy and self._matrix is not None and self._vocab_idx is not None:
-            # Build query vector with IDF weights
             q_vec = np.zeros((len(self._vocab_idx),), dtype=np.float32)
             for tok in q_tokens:
                 col = self._vocab_idx.get(tok)
                 if col is not None:
                     q_vec[col] = self.idf[tok]
-            # Compute scores via matrix multiplication
             scores = self._matrix @ q_vec
         else:
-            # Fall back to traditional document-by-document scoring
             scores = np.array([
                 self._score_doc(q_tokens, i) for i in range(self._num_docs)
             ], dtype=np.float32)
 
-        # Get top-k document indices (sorted by score descending)
         top_idx = np.argsort(-scores)[:top_k]
 
         if return_scores:
-            return top_idx.tolist(), scores[top_idx].tolist()
-        return top_idx.tolist(), []
+            return [(self._doc_store_map[i], float(scores[i])) for i in top_idx]
 
-    def get_docs(self, doc_ids: Sequence[int]) -> List[Tuple[str, str]]:
+        return [self._doc_store_map[i] for i in top_idx]
+
+    def get_docs(self, doc_ids: Sequence[int]) -> List[Document]:
         """
-        Retrieve the original document texts for given document IDs.
+        Retrieve the original Document objects for given document IDs.
 
         Args:
             doc_ids: A sequence of document indices to retrieve.
 
         Returns:
-            List[Tuple[str, str]]: A list of tuples containing (doc_id_str, raw_text)
-                for each requested document.
+            List[Document]: A list of Document instances.
 
         Raises:
             IndexError: If any document ID is out of range.
         """
-        pairs: List[Tuple[str, str]] = []
+        docs: List[Document] = []
         for doc_id in doc_ids:
             # Validate document ID is within valid range
             if not 0 <= doc_id < self._num_docs:
                 raise IndexError(f"DocID {doc_id} is out of range 0 … {self._num_docs - 1}")
-            # Append (string_id, document_text) tuple
-            pairs.append((str(doc_id), self._corpus[doc_id]))
-        return pairs
+            docs.append(self._doc_store_map[doc_id])
+        return docs
 
     def save(self, path: Union[str, Path]) -> None:
         """

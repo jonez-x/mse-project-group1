@@ -1,21 +1,58 @@
 from datetime import datetime
 import logging
-
 from typing import Any, Dict, List, Optional
-
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+from retrieval_engine.core.engine import RetrievalEngine
+from retrieval_engine.docs.document_store import DocumentStore, Document
+import duckdb
+from contextlib import asynccontextmanager
 
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+document_store: Optional[DocumentStore] = None
+retrieval_engine: Optional[RetrievalEngine] = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    global document_store, retrieval_engine
+    logger.info("Loading documents from DuckDB...")
+
+    document_store = DocumentStore()
+
+    try:
+        con = duckdb.connect("crawler/tuebingen_crawl.duckdb")
+        rows = con.execute("SELECT url, title, excerpt, main_image, favicon FROM main.crawl_results").fetchall()
+
+        for row in rows:
+            doc = Document(*row)
+            document_store.add_document(doc)
+
+        logger.info(f"Loaded {len(document_store.get_all())} documents.")
+
+        retrieval_engine = RetrievalEngine(use_prf=False, use_rerank=False)
+        retrieval_engine.fit(document_store.get_all())
+    except Exception as e:
+        logger.error(f"Startup failed: {e}")
+        raise
+
+    yield
+
+    logger.info("Shutting down...")
+
+
 app = FastAPI(
     title="Tübingen Search API",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS middleware - allow frontend to connect
@@ -66,6 +103,8 @@ def retrieve(query, index_path):
 def batch(results):
     # TODO: Implement batch processing
     pass
+
+
 
 
 @app.get("/")
