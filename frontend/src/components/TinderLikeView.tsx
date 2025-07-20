@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import SwipeCards, { type CardType, type SwipeCardsRef } from "./SwipeCards";
 import { type RefObject } from "react";
+import missingImg from "../assets/img/missing.png";
 
 interface TinderLikeViewProps {
   cards: CardType[];
@@ -46,9 +47,17 @@ const TinderLikeView = ({
                     onClick={() => window.open(card.url, '_blank')}
                   >
                     <img
-                      src={card.url}
+                      src={card.image || card.url || missingImg}
                       alt={card.title || "Disliked card"}
                       className="w-full h-32 object-cover"
+                      onError={(e) => {
+                        // If main image fails, try the URL as fallback, then missing image
+                        if (card.image && e.currentTarget.src === card.image) {
+                          e.currentTarget.src = card.url;
+                        } else if (e.currentTarget.src === card.url) {
+                          e.currentTarget.src = missingImg;
+                        }
+                      }}
                     />
                     <div className="p-3">
                       <h4 className="text-sm font-medium text-gray-800 truncate">
@@ -99,9 +108,17 @@ const TinderLikeView = ({
                   onClick={() => window.open(card.url, '_blank')}
                 >
                   <img
-                    src={card.url}
+                    src={card.image || card.url || missingImg}
                     alt={card.title || "Liked card"}
                     className="w-full h-32 object-cover"
+                    onError={(e) => {
+                      // If main image fails, try the URL as fallback, then missing image
+                      if (card.image && e.currentTarget.src === card.image) {
+                        e.currentTarget.src = card.url;
+                      } else if (e.currentTarget.src === card.url) {
+                        e.currentTarget.src = missingImg;
+                      }
+                    }}
                   />
                   <div className="p-3">
                     <h4 className="text-sm font-medium text-gray-800 truncate">
