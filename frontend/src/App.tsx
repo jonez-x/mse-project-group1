@@ -17,6 +17,7 @@ interface ApiDoc {
   description?: string;
   image?: string;
   word_dictionary?: Record<string, number>;
+  document_length?: number;
 }
 
 interface SearchResponse {
@@ -51,7 +52,7 @@ const App = () => {
           setIsSearchEngineReady(true);
         }
       } catch (error) {
-        console.log('Search engine not ready yet, will retry...');
+        console.log('Search engine not ready yet, will retry...' + error);
         // Retry every 2 seconds until ready
         setTimeout(checkSearchEngineStatus, 2000);
       }
@@ -81,7 +82,8 @@ const App = () => {
         title: doc.title,
         description: doc.description,
         image: doc.image,
-        word_dictionary: doc.word_dictionary
+        word_dictionary: doc.word_dictionary,
+        document_length: doc.document_length
       }));
       
       return cards;

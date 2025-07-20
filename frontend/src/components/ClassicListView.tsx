@@ -88,43 +88,63 @@ const ClassicListView = ({ cards }: ClassicListViewProps) => {
                   
                  
                   
-                  {/* Word Dictionary Tags */}
-                  {card.word_dictionary && Object.keys(card.word_dictionary).length > 0 && (
+                  {/* Term Frequency Heat Map Tags */}
+                  {card.word_dictionary && Object.keys(card.word_dictionary).length > 0 && card.document_length && card.document_length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {Object.entries(card.word_dictionary)
-                        .sort(([,a], [,b]) => (b as number) - (a as number))
-                        .slice(0, 5)
-                        .map(([word, score]) => {
-                          // Map score (0.0-1.0) to orange color scale (50-950)
-                          const getOrangeClass = (score: number) => {
+                        .map(([word, rawCount]) => {
+                          // Calculate Term Frequency (TF) = word_count / document_length
+                          const tfScore = rawCount / card.document_length!;
+                          
+                          // Calculate all TF scores for normalization
+                          const allTfScores = Object.entries(card.word_dictionary!).map(([, count]) => count / card.document_length!);
+                          const maxTf = Math.max(...allTfScores);
+                          const minTf = Math.min(...allTfScores);
+                          
+                          // Normalize TF score to 0.1-1.0 range for better visualization
+                          let normalizedScore = 0.1; // Minimum visibility
+                          if (maxTf > minTf) {
+                            normalizedScore = 0.1 + 0.9 * ((tfScore - minTf) / (maxTf - minTf));
+                          } else if (tfScore > 0) {
+                            normalizedScore = 0.5; // All words have same frequency
+                          }
+                          
+                          return { word, rawCount, tfScore, normalizedScore };
+                        })
+                        .sort((a, b) => b.normalizedScore - a.normalizedScore) // Sort by normalized score
+                        .slice(0, 5) // Show top 5 terms
+                        .map(({ word, rawCount, tfScore, normalizedScore }) => {
+                          // Map score (0.1-1.0) to color scale (same as SwipeCards)
+                          const getColorClass = (score: number) => {
                             if (score <= 0) return 'bg-transparent border-gray-300 text-gray-400';
                             
                             const clampedScore = Math.max(0, Math.min(1, score));
                             const colorStep = Math.round(clampedScore * 9); // 0-9 range
                             
-                            const orangeClasses = [
+                            const colorClasses = [
                               'bg-blue-600 border-blue-600 text-white',   // 0.0-0.1
-                              'bg-blue-500 border-blue-500 text-white',  // 0.1-0.2
-                              'bg-blue-400 border-blue-400 text-white',  // 0.2-0.3
-                              'bg-blue-300 border-blue-300 text-white',  // 0.3-0.4
-                              'bg-blue-100 border-blue-100 text-gray-800',  // 0.4-0.5
-                              'bg-orange-300 border-orange-300 text-white',       // 0.5-0.6
-                              'bg-orange-500 border-orange-500 text-white',       // 0.6-0.7
-                              'bg-orange-700 border-orange-700 text-white',       // 0.7-0.8
-                              'bg-red-700 border-red-700 text-white',       // 0.8-0.9
-                              'bg-red-800 border-red-800 text-white'        // 0.9-1.0
+                              'bg-blue-500 border-blue-500 text-white',   // 0.1-0.2
+                              'bg-blue-400 border-blue-400 text-white',   // 0.2-0.3
+                              'bg-blue-300 border-blue-300 text-white',   // 0.3-0.4
+                              'bg-blue-100 border-blue-100 text-gray-800', // 0.4-0.5
+                              'bg-orange-300 border-orange-300 text-white', // 0.5-0.6
+                              'bg-orange-500 border-orange-500 text-white', // 0.6-0.7
+                              'bg-orange-700 border-orange-700 text-white', // 0.7-0.8
+                              'bg-red-700 border-red-700 text-white',      // 0.8-0.9
+                              'bg-red-800 border-red-800 text-white'       // 0.9-1.0
                             ];
                             
-                            return orangeClasses[colorStep];
+                            return colorClasses[colorStep];
                           };
                           
                           return (
                             <span
                               key={word}
-                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs border ${getOrangeClass(score as number)}`}
-                              title={`Score: ${score}`}
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs border ${getColorClass(normalizedScore)}`}
+                              title={`Raw: ${rawCount}, TF: ${tfScore.toFixed(4)}, Score: ${normalizedScore.toFixed(2)}`}
                             >
-                              <span className="ml-1">{word} </span>
+                              {normalizedScore >= 0.5 ? '🔥' : '🧊'}
+                              <span className="ml-1">{word}</span>
                             </span>
                           );
                         })}

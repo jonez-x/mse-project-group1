@@ -9,7 +9,8 @@ type CardType = {
   title?: string; // Optional title property
   description?: string; // Optional description property
   image?: string; // Optional image property
-  word_dictionary?: Record<string, number>; // Optional word dictionary for translations
+  word_dictionary?: Record<string, number>; // Raw word counts for query terms
+  document_length?: number; // Total document length for TF calculation
 };
 
 export { type CardType };
@@ -115,7 +116,7 @@ type CardProps = CardType & {
   autoOpenPages: boolean;
 };
 
-const Card = ({ id, url, favicon, title, description, image, word_dictionary, setCards, cards, onLike, onDislike, index, autoOpenPages }: CardProps) => {
+const Card = ({ id, url, favicon, title, description, image, word_dictionary, document_length, setCards, cards, onLike, onDislike, index, autoOpenPages }: CardProps) => {
   const x = useMotionValue(0);
   const rotateRaw = useTransform(x, [-150, 150], [-18, 18]);
   const opacity = useTransform(x, [-150, 0, 150], [0.2, 1, 0.2]);
@@ -201,41 +202,57 @@ const Card = ({ id, url, favicon, title, description, image, word_dictionary, se
         }}
       />
 
-      {/* Word dictionary features at the top */}
-      {word_dictionary && Object.keys(word_dictionary).length > 0 && (
-        <div className="relative z-10 text-white p-3 ">
+      {/* Term Frequency Heat Map at the top */}
+      {word_dictionary && Object.keys(word_dictionary).length > 0 && document_length && document_length > 0 && (
+        <div className="relative z-10 text-white p-3">
           <div className="flex flex-wrap gap-2">
-            {Object.entries(word_dictionary).map(([word, score]) => {
-              // Map score (0.0-1.0) to orange color scale (50-950)
-              const getOrangeClass = (score: number) => {
+            {Object.entries(word_dictionary).map(([word, rawCount]) => {
+              // Calculate Term Frequency (TF) = word_count / document_length
+              const tfScore = rawCount / document_length;
+              
+              // Calculate all TF scores for normalization
+              const allTfScores = Object.entries(word_dictionary).map(([, count]) => count / document_length);
+              const maxTf = Math.max(...allTfScores);
+              const minTf = Math.min(...allTfScores);
+              
+              // Normalize TF score to 0.1-1.0 range for better visualization
+              let normalizedScore = 0.1; // Minimum visibility
+              if (maxTf > minTf) {
+                normalizedScore = 0.1 + 0.9 * ((tfScore - minTf) / (maxTf - minTf));
+              } else if (tfScore > 0) {
+                normalizedScore = 0.5; // All words have same frequency
+              }
+              
+              // Map score (0.1-1.0) to color scale
+              const getColorClass = (score: number) => {
                 if (score <= 0) return 'bg-transparent border-gray-300 text-gray-400';
                 
                 const clampedScore = Math.max(0, Math.min(1, score));
                 const colorStep = Math.round(clampedScore * 9); // 0-9 range
                 
-                const orangeClasses = [
+                const colorClasses = [
                   'bg-blue-600 border-white text-white',   // 0.0-0.1
-                  'bg-blue-500 border-white text-white',  // 0.1-0.2
-                  'bg-blue-400 border-white text-white',  // 0.2-0.3
-                  'bg-blue-300 border-white text-white',  // 0.3-0.4
-                  'bg-blue-100 border-white text-white',  // 0.4-0.5
-                  'bg-orange-300 border-white text-white',       // 0.5-0.6
-                  'bg-orange-500 border-white text-white',       // 0.6-0.7
-                  'bg-orange-700 border-white text-white',       // 0.7-0.8
-                  'bg-red-700 border-white text-white',       // 0.8-0.9
-                  'bg-red-800 border-white text-white'        // 0.9-1.0
+                  'bg-blue-500 border-white text-white',   // 0.1-0.2
+                  'bg-blue-400 border-white text-white',   // 0.2-0.3
+                  'bg-blue-300 border-white text-white',   // 0.3-0.4
+                  'bg-blue-100 border-white text-white',   // 0.4-0.5
+                  'bg-orange-300 border-white text-white', // 0.5-0.6
+                  'bg-orange-500 border-white text-white', // 0.6-0.7
+                  'bg-orange-700 border-white text-white', // 0.7-0.8
+                  'bg-red-700 border-white text-white',    // 0.8-0.9
+                  'bg-red-800 border-white text-white'     // 0.9-1.0
                 ];
                 
-                return orangeClasses[colorStep];
+                return colorClasses[colorStep];
               };
               
               return (
                 <span
                   key={word}
-                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs border ${getOrangeClass(score as number)}`}
-                  title={`Score: ${score}`}
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs border ${getColorClass(normalizedScore)}`}
+                  title={`Raw: ${rawCount}, TF: ${tfScore.toFixed(4)}, Score: ${normalizedScore.toFixed(2)}`}
                 >
-                  {(score as number) >= 0.5 ? '🔥' : '🧊'}
+                  {normalizedScore >= 0.5 ? '🔥' : '🧊'}
                   <span className="ml-1">{word}</span>
                 </span>
               );
@@ -258,7 +275,7 @@ const Card = ({ id, url, favicon, title, description, image, word_dictionary, se
               className="w-5 h-5"
             />
           )}
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold underline">
             {title || "Untitled"}
           </h2>
         </div>
