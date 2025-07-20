@@ -62,7 +62,7 @@ def load_documents_v2() -> List[Document]:
             main_image=None,
             favicon=None
         )
-        doc.word_dict = tf  # <--- hinzugefügt
+        doc.word_dict = tf
         documents.append(doc)
     return documents
 
@@ -105,7 +105,8 @@ class Doc(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     image: Optional[str] = None
-    word_dictionary: Optional[Dict[str, float]] = None
+    word_dictionary: Optional[Dict[str, float]] = None,
+    document_length: Optional[int]
 
 
 
@@ -134,10 +135,11 @@ def build_docs(docs: List[Document], query: str) -> List[Doc]:
             favicon=doc.favicon,
             image=doc.main_image,
             word_dictionary={
-                word: count / total
+                word: count
                 for word, count in getattr(doc, "word_dict", {}).items()
                 if word.lower() in query_words
-            } if (total := sum(getattr(doc, "word_dict", {}).values())) > 0 else {}
+            },
+            document_length= len(re.findall(r"\b\w+\b", doc.excerpt.lower()))
         )
         for i, doc in enumerate(docs)
     ]
