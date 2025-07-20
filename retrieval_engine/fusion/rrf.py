@@ -1,44 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import DefaultDict, Dict, Iterable, List, Optional, Sequence, Tuple, Union
-
-# TODO: Delete this comment if not needed anymore
-"""rank_fusion.py
-Usage
------
->>> from rank_fusion import ReciprocalRankFusion
->>> bm25_hits   = ["doc3", "doc8", "doc1"]  # highest rank → index 0
->>> sbert_hits  = ["doc8", "doc2", "doc3", "doc9"]
->>> rrf = ReciprocalRankFusion(k=60)
->>> fused = rrf.fuse([bm25_hits, sbert_hits], top_n=3, return_scores=True)
->>> for doc_id, score in fused:
-...     print(f"{doc_id}: {score:.4f}")
-
-doc8: 0.0333
-
-doc3: 0.0305
-
-doc1: 0.0164
-
-Compared to the original version, the *return_scores* flag makes it possible to
-obtain a list of ``(doc_id, score)`` tuples instead of plain doc_ids.
-
-API
----
-class **ReciprocalRankFusion(k: int = 60)**
-    | Parameter | Description                                      |
-    |-----------|--------------------------------------------------|
-    | k         | Controls how quickly the reciprocal term decays; |
-    |           | larger *k* means flatter contribution.           |
-
-**fuse( rankings: list[list[str]], /, *, top_n: int | None = None, return_scores: bool = False) → list[str] | list[tuple[str, float]]**
-    Fuses any number of *rankings* and returns the merged result, optionally
-    limited to *top_n* elements.  Set *return_scores* to *True* if you also
-    want the numeric RRF scores.
-
-MIT Licence.
-"""
+from typing import DefaultDict, Dict, List, Optional, Sequence, Tuple, Union
 
 
 class ReciprocalRankFusion:
@@ -46,7 +9,7 @@ class ReciprocalRankFusion:
 
     Paramters:
         k (int): Constant that controls the contribution of each position.
-            The RRF paper suggests to start with a value of  *k ≈ 60*.
+            The RRF paper suggests to start with a value of *k ≈ 60*.
     """
 
     def __init__(self, k: int = 60) -> None:

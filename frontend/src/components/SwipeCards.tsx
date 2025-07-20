@@ -17,6 +17,7 @@ type SwipeCardsProps = {
   setCards: React.Dispatch<React.SetStateAction<CardType[]>>;
   onLike: (card: CardType) => void;
   onDislike: (card: CardType) => void;
+  autoOpenPages: boolean;
 };
 
 export type SwipeCardsRef = {
@@ -24,7 +25,7 @@ export type SwipeCardsRef = {
   swipeRight: () => void;
 };
 
-const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards, onLike, onDislike }, ref) => {
+const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards, onLike, onDislike, autoOpenPages}, ref) => {
   const animateSwipe = (direction: 'left' | 'right', topCard: CardType) => {
     const cardElement = document.querySelector(`[data-card-id="${topCard.id}"]`) as HTMLElement;
     if (cardElement) {
@@ -41,7 +42,10 @@ const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards
         if (direction === 'left') {
           onDislike(topCard);
         } else {
-          window.open(topCard.url, '_blank');
+            // Only open the page automatically if autoOpenPages is true
+            if (autoOpenPages) {
+              window.open(topCard.url, '_blank');
+            }
           onLike(topCard);
         }
         setCards((prev) => prev.filter((card) => card.id !== topCard.id));
@@ -51,7 +55,9 @@ const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards
       if (direction === 'left') {
         onDislike(topCard);
       } else {
-        window.open(topCard.url, '_blank');
+        if (autoOpenPages) {
+          window.open(topCard.url, '_blank');
+        }
         onLike(topCard);
       }
       setCards((prev) => prev.filter((card) => card.id !== topCard.id));
@@ -91,6 +97,7 @@ const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards
           onLike={onLike}
           onDislike={onDislike}
           index={index}
+          autoOpenPages={autoOpenPages}
         />
       ))}
     </div>
@@ -103,9 +110,10 @@ type CardProps = CardType & {
   onLike: (card: CardType) => void;
   onDislike: (card: CardType) => void;
   index: number;
+  autoOpenPages: boolean;
 };
 
-const Card = ({ id, url, favicon, title, description, word_dictionary, setCards, cards, onLike, onDislike, index }: CardProps) => {
+const Card = ({ id, url, favicon, title, description, word_dictionary, setCards, cards, onLike, onDislike, index, autoOpenPages }: CardProps) => {
   const x = useMotionValue(0);
   const rotateRaw = useTransform(x, [-150, 150], [-18, 18]);
   const opacity = useTransform(x, [-150, 0, 150], [0.2, 1, 0.2]);
@@ -121,7 +129,9 @@ const Card = ({ id, url, favicon, title, description, word_dictionary, setCards,
     const currentCard = { id, url, favicon, title, description, word_dictionary };
     
     if (x.get() > 100 ){
-      open(url, '_blank');
+      if (autoOpenPages) {
+        open(url, '_blank');
+      }
       onLike(currentCard);
     } else if (x.get() < -100) { 
       onDislike(currentCard);

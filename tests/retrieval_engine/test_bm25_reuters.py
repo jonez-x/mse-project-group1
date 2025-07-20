@@ -22,7 +22,7 @@ def test_bm25_ranking(reuters_docs: List[str]):
     # Query for oil prices and measure performance
     start = time.perf_counter()
     hits = bm25.query(
-        text="oil prices",
+        query="oil prices",
         top_k=20
     )
     duration = time.perf_counter() - start
@@ -56,7 +56,7 @@ def test_pickle_roundtrip(
     # Test both original and loaded indexers
     for retriever, label in [(bm25, "orig"), (loaded, "loaded")]:
         start = time.perf_counter()
-        hits = retriever.query(text="federal reserve", top_k=10)
+        hits = retriever.query(query="federal reserve", top_k=10)
         elapsed = time.perf_counter() - start
 
         log_query_results(
@@ -68,4 +68,4 @@ def test_pickle_roundtrip(
         )
 
     # Verify identical results from both indexers
-    assert bm25.query(text="federal reserve", top_k=10) == loaded.query(text="federal reserve", top_k=10)
+    assert bm25.query(query="federal reserve", top_k=10) == loaded.query(query="federal reserve", top_k=10)

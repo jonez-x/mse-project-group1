@@ -69,7 +69,7 @@ class RocchioPRF:
 
         if query_vec.size == 0:
             raise ValueError("Query vector cannot be empty")
-        if not rel_doc_vecs:
+        if len(rel_doc_vecs) == 0 or all(vec.size == 0 for vec in rel_doc_vecs):
             raise ValueError("At least one relevant document vector is required")
 
     def _compute_centroid(self, vectors: VectorSequence) -> Vector:
