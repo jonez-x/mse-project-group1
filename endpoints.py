@@ -99,6 +99,7 @@ class Doc(BaseModel):
     favicon: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
+    image: Optional[str] = None
     word_dictionary: Optional[Dict[str, int]] = None
 
 
@@ -123,6 +124,7 @@ def build_docs(docs: List[Document], query: str) -> List[Doc]:
             title=doc.title,
             description=doc.excerpt,
             favicon=doc.favicon,
+            image=doc.main_image,
             word_dictionary={
                 word: count for word, count in getattr(doc, "word_dict", {}).items()
                 if word in query_words
