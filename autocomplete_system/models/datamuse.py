@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 import logging
+import re
 
 import requests
 
@@ -40,52 +41,42 @@ class DataMuseModel(AutocompleteModel):
         """No-op for API-based models like DataMuse."""
         pass
 
-    def suggest(
-            self,
-            query: str,
-            n_suggestions: int = 3
-    ) -> List[AutocompleteResult]:
-        # For empty queries, return an empty list
-        if not query:
-            return []
-
-        # Determine if we should complete a word or predict next word
-        if query.endswith(' '):
-            # Predict next word
-            words = query.lower().strip().split()
-            if words:
-                return self._predict_next_word(words[-1], n_suggestions)
-        else:
-            # Complete current word
-            words = query.lower().strip().split()
-            if words:
-                current_word = words[-1]
-                if len(current_word) >= 2:
-                    return self._complete_word(current_word, n_suggestions)
-
-        return []
+    def _is_valid_word(self, word: str) -> bool:
+        """
+        Check if a word is valid (contains only letters, hyphens, and apostrophes).
+        
+        Args:
+            word (str): The word to validate.
+            
+        Returns:
+            bool: True if the word is valid, False otherwise.
+        """
+        # Only allow words with letters, hyphens, and apostrophes
+        # This filters out punctuation like ".", ",", numbers, etc.
+        return bool(re.match(r"^[a-zA-Z'-]+$", word)) and len(word) >= 2
 
     def _predict_next_word(
             self,
-            last_word: str,
-            max_suggestions: int = 3,
+            words: List[str],
+            n_suggestions: int = 3,
     ) -> List[AutocompleteResult]:
         """
-        Predict the next word that commonly follow the given last word.
+        Predict the next word that commonly follow the given words.
 
         Args:
-            last_word (str): The last word in the query.
-            max_suggestions (int): Maximum number of suggestions to return (default: 3).
+            words (List[str]): List of preceding words.
+            n_suggestions (int): Maximum number of suggestions to return (default: 3).
 
         Returns:
             List[AutocompleteResult]: List of suggested next words with their scores.
         """
+        last_word = words[-1]  # Use the last word for the API call
         try:
             response = requests.get(
                 url=f"{self.BASE_URL}/words",
                 params={
                     "rek_trg": last_word,
-                    "max": max_suggestions,
+                    "max": n_suggestions,
                 },
                 timeout=self.REQUEST_TIMEOUT,
             )
@@ -98,7 +89,7 @@ class DataMuseModel(AutocompleteModel):
                         word=result["word"],
                         score=float(result.get("score", 1.0)),  # Default score if not provided
                         type="next_word"
-                    ) for result in results
+                    ) for result in results if self._is_valid_word(result["word"])
                 ]
 
                 # If no results with rel_trg, try rel_bga (bigram analysis)
@@ -109,7 +100,7 @@ class DataMuseModel(AutocompleteModel):
                         url=f"{self.BASE_URL}/words",
                         params={
                             "rel_bga": last_word,
-                            "max": max_suggestions,
+                            "max": n_suggestions,
                         },
                         timeout=self.REQUEST_TIMEOUT,
                     )
@@ -120,7 +111,7 @@ class DataMuseModel(AutocompleteModel):
                                 word=result["word"],
                                 score=float(result.get("score", 1.0)),
                                 type="next_word"
-                            ) for result in results
+                            ) for result in results if self._is_valid_word(result["word"])
                         ]
 
                 return suggestions
@@ -136,14 +127,14 @@ class DataMuseModel(AutocompleteModel):
     def _complete_word(
             self,
             partial_word: str,
-            max_suggestions: int = 3,
+            n_suggestions: int = 3,
     ) -> List[AutocompleteResult]:
         """
         Get word completions for a partial word.
 
         Args:
             partial_word (str): The partial word to complete.
-            max_suggestions (int): Maximum number of suggestions to return (default: 3).
+            n_suggestions (int): Maximum number of suggestions to return (default: 3).
 
         Returns:
             List[AutocompleteResult]: List of suggested completions with their scores.
@@ -153,7 +144,7 @@ class DataMuseModel(AutocompleteModel):
                 url=f"{self.BASE_URL}/sug",
                 params={
                     "s": partial_word,
-                    "max": max_suggestions,
+                    "max": n_suggestions,
                 },
                 timeout=self.REQUEST_TIMEOUT,
             )
@@ -166,7 +157,7 @@ class DataMuseModel(AutocompleteModel):
                         word=result["word"],
                         score=float(result.get("score", 1.0)),  # Default score if not provided
                         type="completion"
-                    ) for result in results
+                    ) for result in results if self._is_valid_word(result["word"])
                 ]
 
             else:
@@ -191,17 +182,24 @@ class DataMuseModel(AutocompleteModel):
 # Example usage:
 if __name__ == "__main__":
     model = DataMuseModel()
-    print(f"Predicting completions for 'hel':")
-    suggestions_hel = model.suggest("hel")
-    for suggestion in suggestions_hel:
-        print(suggestion)
 
-    print(f"\nPredicting next words for 'hello ':")
-    suggestions_hello = model.suggest("hello ")
-    for suggestion in suggestions_hello:
-        print(suggestion)
+    # Test the model with some example words
+    example_words = ["food", "movie", "tuebingen", "car", "university"]
+    for word in example_words:
+        # Test word completion (partial prefix)
+        suggestions = model.suggest(
+            query=word[:3],
+            n_suggestions=5,
+        )
+        print(f"\nSuggestions for '{word[:3]}': ")
+        for suggestion in suggestions:
+            print(f"  - {suggestion.word} (score: {suggestion.score})")
 
-    print(f"\nPredicting next words for 'hello world ':")
-    suggestions_hello_world = model.suggest("hello world ")
-    for suggestion in suggestions_hello_world:
-        print(suggestion)
+        # Test next word prediction (full word + space)
+        next_word_suggestions = model.suggest(
+            query=word + " ",
+            n_suggestions=5,
+        )
+        print(f"\nNext word suggestions after '{word}': ")
+        for suggestion in next_word_suggestions:
+            print(f"  - {suggestion.word} (score: {suggestion.score}) [{suggestion.type}]")

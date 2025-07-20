@@ -97,7 +97,7 @@ class NgramModel(AutocompleteModel):
 
             # Build n-grams for all orders from 1 to n
             for k in range(1, self.n + 1):
-                for i in range(1, len(words) - k):
+                for i in range(len(words) - k):
                     context = tuple(words[i:i + k])
                     next_word = words[i + k]
                     self.ngrams[k][context][next_word] += 1
@@ -131,37 +131,59 @@ class NgramModel(AutocompleteModel):
         # If not trained, return empty suggestions --> Need to handle this in the frontend
         if not self.is_trained:
             return []
+        
+        # Use the parent class logic
+        return super().suggest(query, n_suggestions)
 
-        query = query.lower().strip()
+    def _predict_next_word(
+            self,
+            words: List[str],
+            n_suggestions: int = 5,
+    ) -> List[AutocompleteResult]:
+        """
+        Predict the next word using n-gram analysis.
 
-        # Make sure query is not empty
-        if not query:
-            return []
+        Args:
+            words (List[str]): List of preceding words.
+            n_suggestions (int): Maximum number of suggestions to return.
 
-        words = query.split()
-
-        # If query ends with space, predict next word
-        if query.endswith(' ') and words:
-            for k in range(min(self.n, len(words)), 0, -1):
-                context = tuple(words[-k:])
-                if context in self.ngrams[k]:
-                    candidates = self.ngrams[k][context].most_common(n_suggestions)
+        Returns:
+            List[AutocompleteResult]: List of suggested next words.
+        """
+        # Try different n-gram orders, starting from highest
+        for k in range(min(self.n, len(words)), 0, -1):
+            context = tuple(words[-k:])
+            if context in self.ngrams[k]:
+                candidates = self.ngrams[k][context].most_common(n_suggestions)
+                if candidates:  # Only return if we actually have candidates
                     return [
                         AutocompleteResult(
                             word=word,
-                            score=float(self.word_freq[word]),
+                            score=float(freq),
                             type="next_word",
-                        ) for word, _ in candidates
+                        ) for word, freq in candidates
                     ]
 
-            # Either no context or no candidates found
-            return []
+        # No n-gram context found
+        return []
 
-        # Complete current word
-        prefix = words[-1] if words else query
+    def _complete_word(
+            self,
+            partial_word: str,
+            n_suggestions: int = 5,
+    ) -> List[AutocompleteResult]:
+        """
+        Complete a partial word using the prefix index.
 
-        if prefix in self.prefix_index:
-            suggestions = self.prefix_index[prefix][:n_suggestions]
+        Args:
+            partial_word (str): The partial word to complete.
+            n_suggestions (int): Maximum number of suggestions to return.
+
+        Returns:
+            List[AutocompleteResult]: List of word completions.
+        """
+        if partial_word in self.prefix_index:
+            suggestions = self.prefix_index[partial_word][:n_suggestions]
             return [
                 AutocompleteResult(
                     word=word,

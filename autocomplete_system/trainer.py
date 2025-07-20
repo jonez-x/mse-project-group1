@@ -6,14 +6,14 @@ from config import *
 from autocomplete_system.data import DataLoader
 
 MODEL_CLASSES = {
-    "ngram": lambda: NgramModel(NGRAM_ORDER),
+    "ngram": lambda: NgramModel(n=NGRAM_ORDER),
     # "trie": TrieModel,
     # "hybrid": lambda : HybridModel(NGRAM_ORDER),
 }
 
 
 def train_and_serialize_model(
-        model_name=DEFAULT_MODEL,
+        model_name: str = DEFAULT_MODEL,
         texts: Optional[List[str]] = None,
         verbose: bool = True,
 ):
@@ -55,3 +55,46 @@ def load_model(
 
     return model
 
+
+# Example usage:
+if __name__ == "__main__":
+    # Train and serialize the model
+    trained_model = train_and_serialize_model(
+        model_name="ngram",
+        texts=None,  # Load texts from DuckDB if None
+        verbose=True
+    )
+
+    # Load the model
+    loaded_model = load_model(
+        model_name="ngram",
+        verbose=True
+    )
+
+    # Check if the loaded model is the same as the trained one
+    assert isinstance(loaded_model, NgramModel)
+    print("Model loaded successfully and is of type NgramModel.")
+
+    # Debug: Check if n-grams were built
+    print(f"N-gram counts: {[(k, len(loaded_model.ngrams[k])) for k in loaded_model.ngrams]}")
+
+    # Test the model with some example words
+    example_words = ["food", "movie", "tuebingen", "car", "university"]
+    for word in example_words:
+        # Test word completion (partial prefix)
+        suggestions = loaded_model.suggest(
+            query=word[:3],
+            n_suggestions=5
+        )
+        print(f"\nSuggestions for '{word[:3]}': ")
+        for suggestion in suggestions:
+            print(f"  - {suggestion.word} (score: {suggestion.score})")
+
+        # Test next word prediction (full word + space)
+        next_word_suggestions = loaded_model.suggest(
+            query=word + " ",
+            n_suggestions=5
+        )
+        print(f"\nNext word suggestions after '{word}': ")
+        for suggestion in next_word_suggestions:
+            print(f"  - {suggestion.word} (score: {suggestion.score}) [{suggestion.type}]")
