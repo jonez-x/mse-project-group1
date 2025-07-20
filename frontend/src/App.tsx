@@ -206,11 +206,11 @@ const App = () => {
         <div className="min-h-screen flex flex-col bg-neutral-100">
             {/* Header with Logo */}
             <div
-                className="flex justify-between items-center p-6 bg-neutral-100 backdrop-blur-sm border-b border-white/30">
+                className="relative flex items-center p-6 bg-neutral-100 backdrop-blur-sm border-b border-white/30">
                 {/* Auto-open Pages Toggle - Only show in Tinder mode */}
-                {viewMode === 'tinder' ? (
+                {viewMode === 'tinder' && (
                     <div
-                        className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border-2 border-gray-200/70 shadow-lg rounded-full px-3 py-2">
+                        className="absolute left-6 flex items-center gap-2 bg-white/90 backdrop-blur-sm border-2 border-gray-200/70 shadow-lg rounded-full px-3 py-2">
                         <span className="text-xs text-gray-700 whitespace-nowrap">Auto-open:</span>
                         <button
                             onClick={() => setAutoOpenPages(!autoOpenPages)}
@@ -225,17 +225,31 @@ const App = () => {
               />
                         </button>
                     </div>
-                ) : (
-                    <div className="w-20"></div>
                 )}
-                {/* Spacer for centering when not in Tinder mode */}
-                <img src={logo} alt="Logo" className="h-10"/>
+
+                {/* Centered Logo - Always clickable */}
+                <div className="flex-1 flex justify-center">
+                    <button
+                        onClick={() => {
+                            setShowCards(false);
+                            setSearchQuery("");
+                            setCards([]);
+                            setAllSearchResults([]);
+                            setLikedCards([]);
+                            setDislikedCards([]);
+                            setError(null);
+                            inputRef.current?.focus();
+                        }}
+                        className="hover:scale-105 transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400/50 rounded-lg"
+                    >
+                        <img src={logo} alt="Logo" className="h-10"/>
+                    </button>
+                </div>
 
                 {/* View Toggle Button */}
                 <button
                     onClick={() => setViewMode(viewMode === 'tinder' ? 'list' : 'tinder')}
-                    className="w-20 h-10 rounded-full bg-white/90 backdrop-blur-sm border-2 border-gray-200/70 shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200 text-black"
-
+                    className="absolute right-6 w-20 h-10 rounded-full bg-white/90 backdrop-blur-sm border-2 border-gray-200/70 shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200 text-black"
                 >
                     {viewMode === 'tinder' ? 'Tünder' : 'Classic'}
                 </button>
