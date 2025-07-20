@@ -3,32 +3,67 @@ import time
 from collections import Counter, defaultdict
 from typing import List, Dict, Tuple, Any
 
-from autocomplete_system.models.base import AutocompleteModel
+from autocomplete_system.models.base import AutocompleteModel, AutocompleteResult
 
 
 class NgramModel(AutocompleteModel):
-    """Simple N-gram based autocompletion model."""
+    """
+    Simple N-gram based autocompletion model.
+
+    This model builds n-grams from the training texts and uses them
+    to suggest completions based on the last words of the input query.
+
+    Attributes:
+        n (int): The maximum order of n-grams to use.
+        word_freq (Counter): Frequency count of words in the training data.
+        ngrams (Dict[int, Dict[Tuple[str], Counter]]): N-gram dictionaries for each order.
+        prefix_index (Dict[str, List[str]]): Index for fast prefix-based suggestions.
+        is_trained (bool): Flag indicating if the model has been trained.
+        training_time (float): Time taken to train the model.
+        vocab_size (int): Size of the vocabulary after training.
+    """
 
     def __init__(
             self,
-            n=3,
-    ):
-        self.name = f"ngram_{n}"
+            n: int = 3,
+    ) -> None:
+        """
+        Initialize the NgramModel with a specified n-gram order.
+
+        Args:
+            n (int): The maximum order of n-grams to use (default: 3).
+        """
+        # Initialize the base class with a name and set up the model
+        super().__init__(name=f"ngram_{n}")
         self.n = n
+
+        # Frequency count of words in the training data
         self.word_freq = Counter()
 
         # Build n-gram dictionaries for each order (1 to n)
         self.ngrams = {k: defaultdict(Counter) for k in range(1, self.n + 1)}
+        self.vocab_size: int = 0
 
+        # Dictionary for fast prefix-based suggestions
         self.prefix_index: Dict[str, List[str]] = defaultdict(list)
+
+        # Initialize training status and timing
         self.is_trained: bool = False
         self.training_time: float = 0.0
-        self.vocab_size: int = 0
 
     def _tokenize(
             self,
             text: str,
     ) -> List[str]:
+        """
+        Helper method to tokenize text into words.
+
+        Args:
+            text (str): Input text to tokenize.
+
+        Returns:
+            List[str]: List of words extracted from the text.
+        """
         return re.findall(r"\b[\w'-]{2,}\b", text.lower())
 
     def train(
@@ -38,6 +73,17 @@ class NgramModel(AutocompleteModel):
             verbose: bool = True,
             **_,
     ) -> None:
+        """
+        Train the N-gram model on a list of texts.
+
+        This method processes the texts, builds n-grams, and creates a prefix index for fast lookups.
+
+        Args:
+            texts (List[str]): List of input texts to train on.
+            min_freq (int): Minimum frequency for words to be included in the vocabulary (default: 2).
+            verbose (bool): Whether to print training progress (default: True).
+            **_: Additional keyword arguments (not used).
+        """
         start_time = time.time()
 
         # Process all texts and build n-grams
@@ -81,7 +127,8 @@ class NgramModel(AutocompleteModel):
             self,
             query: str,
             n_suggestions: int = 5,
-    ) -> List[Tuple[str, float]]:
+    ) -> List[AutocompleteResult]:
+        # If not trained, return empty suggestions --> Need to handle this in the frontend
         if not self.is_trained:
             return []
 
@@ -99,7 +146,14 @@ class NgramModel(AutocompleteModel):
                 context = tuple(words[-k:])
                 if context in self.ngrams[k]:
                     candidates = self.ngrams[k][context].most_common(n_suggestions)
-                    return [(word, self.word_freq[word]) for word, _ in candidates]
+                    return [
+                        AutocompleteResult(
+                            word=word,
+                            score=float(self.word_freq[word]),
+                            type="next_word",
+                        ) for word, _ in candidates
+                    ]
+
             # Either no context or no candidates found
             return []
 
@@ -108,7 +162,13 @@ class NgramModel(AutocompleteModel):
 
         if prefix in self.prefix_index:
             suggestions = self.prefix_index[prefix][:n_suggestions]
-            return [(word, self.word_freq[word]) for word in suggestions]
+            return [
+                AutocompleteResult(
+                    word=word,
+                    score=float(self.word_freq[word]),
+                    type="completion",
+                ) for word in suggestions
+            ]
 
         return []
 
@@ -120,3 +180,6 @@ class NgramModel(AutocompleteModel):
             "is_trained": self.is_trained,
             "n": self.n,
         }
+
+    def is_training_required(self) -> bool:
+        return True

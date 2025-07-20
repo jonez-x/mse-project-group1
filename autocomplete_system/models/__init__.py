@@ -1,11 +1,10 @@
-from .base import AutocompleteModel
+from .base import AutocompleteModel, AutocompleteResult
 from .ngram import NgramModel
-#from .trie import TrieModel
-#from .hybrid import HybridModel
+from .datamuse import DataMuseModel
 
 __all__ = [
     "AutocompleteModel",
+    "AutocompleteResult",
     "NgramModel",
-    #"TrieModel",
-    #"HybridModel",
+    "DataMuseModel",
 ]
