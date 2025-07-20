@@ -2,6 +2,7 @@ import gzip
 import logging
 from fastapi import FastAPI, HTTPException, Query, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from nltk import download
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 import duckdb
@@ -10,7 +11,11 @@ from retrieval_engine.docs.document_store import Document
 from contextlib import asynccontextmanager
 import uvicorn
 from collections import Counter
+from nltk.corpus import stopwords
 import re
+
+download("stopwords")
+stop_words = set(stopwords.words("english"))
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -100,7 +105,7 @@ class Doc(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     image: Optional[str] = None
-    word_dictionary: Optional[Dict[str, int]] = None
+    word_dictionary: Optional[Dict[str, float]] = None
 
 
 
@@ -116,7 +121,10 @@ def tokenize(text: str) -> List[str]:
     return re.findall(r"\b\w+\b", text.lower())
 
 def build_docs(docs: List[Document], query: str) -> List[Doc]:
-    query_words = set(tokenize(query))
+    print(query)
+    query_words = set(tokenize(query)) - stop_words
+    print(stop_words)
+    print(query_words)
     return [
         Doc(
             id=i + 1,
@@ -126,13 +134,13 @@ def build_docs(docs: List[Document], query: str) -> List[Doc]:
             favicon=doc.favicon,
             image=doc.main_image,
             word_dictionary={
-                word: count for word, count in getattr(doc, "word_dict", {}).items()
-                if word in query_words
-            }
+                word: count / total
+                for word, count in getattr(doc, "word_dict", {}).items()
+                if word.lower() in query_words
+            } if (total := sum(getattr(doc, "word_dict", {}).values())) > 0 else {}
         )
         for i, doc in enumerate(docs)
     ]
-
 
 
 
