@@ -40,6 +40,7 @@ const App = () => {
   const cardsToShow = 7; // Variable to control how many cards to show
   const [key, setKey] = useState(0); // Force re-render key
   const swipeCardsRef = useRef<SwipeCardsRef>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Check if search engine is ready on component mount
   useEffect(() => {
@@ -108,43 +109,48 @@ const App = () => {
     }
   }, [cards, showCards, viewMode, allSearchResults, likedCards, dislikedCards, cardsToShow]);
 
-  const handleSearch = async () => {
+  const launchSearch = async () => {
     // Only search if there's a query and search engine is ready
-    if (searchQuery.trim() && isSearchEngineReady) {
-      // Clear liked and disliked arrays when searching
-      setLikedCards([]);
-      setDislikedCards([]);
+    if (!searchQuery.trim() || !isSearchEngineReady) return;
+
+    // Remove focus from input to hide caret
+    inputRef.current?.blur();
+    
+    // Clear liked and disliked arrays when searching
+    setLikedCards([]);
+    setDislikedCards([]);
+    
+    try {
+      const searchResults = await searchAPI(searchQuery);
       
-      try {
-        const searchResults = await searchAPI(searchQuery);
+      if (searchResults.length > 0) {
+        setAllSearchResults(searchResults);
         
-        if (searchResults.length > 0) {
-          setAllSearchResults(searchResults);
-          
-          if (viewMode === 'tinder') {
-            // For Tinder mode, show first few cards
-            const initialCards = searchResults.slice(0, cardsToShow).reverse();
-            setCards(initialCards);
-          } else {
-            // For list mode, show all results
-            setCards(searchResults);
-          }
-          
-          setShowCards(true);
-          setKey(prev => prev + 1); // Force SwipeCards to re-render
+        if (viewMode === 'tinder') {
+          // For Tinder mode, show first few cards
+          const initialCards = searchResults.slice(0, cardsToShow).reverse();
+          setCards(initialCards);
+        } else {
+          // For list mode, show all results
+          setCards(searchResults);
         }
-      } catch (err) {
-        console.error('Search failed:', err);
+        
+        setShowCards(true);
+        setKey(prev => prev + 1); // Force SwipeCards to re-render
       }
+    } catch (err) {
+      console.error('Search failed:', err);
     }
   };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            handleSearch();
-        }
-    };
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      launchSearch();
+    }
+  };
+
+  const handleSearchClick = () => launchSearch();
 
     const handleDislikeClick = () => {
         swipeCardsRef.current?.swipeLeft();
@@ -157,7 +163,11 @@ const App = () => {
     // Add keyboard event listener for arrow keys (only in Tinder mode)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (!showCards || viewMode !== 'tinder') return; // Only allow swiping when cards are shown and in Tinder mode
+            // Don't allow swiping if user is typing in the search input
+            const activeElement = document.activeElement;
+            const isTypingInInput = activeElement && activeElement.tagName === 'INPUT';
+            
+            if (!showCards || viewMode !== 'tinder' || isTypingInInput) return; // Only allow swiping when cards are shown and in Tinder mode and not typing
 
             if (e.key === "ArrowLeft") {
                 e.preventDefault();
@@ -246,10 +256,11 @@ const App = () => {
 
                 <div className="relative w-full max-w-md">
                     <input
+                        ref={inputRef}
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyPress={handleKeyPress}
+                        onKeyDown={handleKeyDown}
                         placeholder={isSearchEngineReady ? "Search for anything..." : "Search engine is initializing..."}
                         disabled={!isSearchEngineReady || isLoading}
                         className={`w-full h-14 pl-6 pr-14 rounded-full backdrop-blur-md border shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent text-gray-800 placeholder-gray-500 transition-all duration-300 ${
@@ -260,7 +271,7 @@ const App = () => {
                     />
                     {/* Search Icon Button */}
                     <button
-                        onClick={handleSearch}
+                        onClick={handleSearchClick}
                         disabled={!isSearchEngineReady || isLoading}
                         className={`absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-colors duration-200 flex items-center justify-center group ${
                             !isSearchEngineReady || isLoading
