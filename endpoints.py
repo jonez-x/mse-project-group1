@@ -141,22 +141,9 @@ router_v1 = APIRouter(prefix="/v1", tags=["v1"])
 
 @router_v1.get("/search", response_model=SearchResponse)
 async def search_v1(q: str = Query(...)):
+    print()
     results = retriever_v1.search(q)
     return SearchResponse(results=build_docs(results, q))
-
-
-@router_v1.post("/batch-search")
-async def batch_search_v1(request: BatchSearchRequest):
-    batch_results = {}
-    for i, query in enumerate(request.queries, 1):
-        results = retriever_v1.search(query)
-        batch_results[f"query_{i}"] = build_docs(results, query)
-
-    return {
-        "message": "Batch search completed",
-        "num_queries": len(request.queries),
-        "results": batch_results
-    }
 
 
 # --- API Router für v2 ---
@@ -166,20 +153,6 @@ router_v2 = APIRouter(prefix="/v2", tags=["v2"])
 async def search_v2(q: str = Query(...)):
     results = retriever_v2.search(q)
     return SearchResponse(results=build_docs(results, q))
-
-
-@router_v2.post("/batch-search")
-async def batch_search_v2(request: BatchSearchRequest):
-    batch_results = {}
-    for i, query in enumerate(request.queries, 1):
-        results = retriever_v2.search(query)
-        batch_results[f"query_{i}"] = build_docs(results, query)
-
-    return {
-        "message": "Batch search completed",
-        "num_queries": len(request.queries),
-        "results": batch_results
-    }
 
 
 app.include_router(router_v1)
