@@ -11,6 +11,7 @@ interface TinderLikeViewProps {
   onDislike: (card: CardType) => void;
   swipeCardsRef: RefObject<SwipeCardsRef | null>;
   componentKey: number;
+  autoOpenPages: boolean;
 }
 
 const TinderLikeView = ({ 
@@ -21,7 +22,8 @@ const TinderLikeView = ({
   onLike, 
   onDislike, 
   swipeCardsRef, 
-  componentKey 
+  componentKey,
+  autoOpenPages
 }: TinderLikeViewProps) => {
   return (
     <div className="flex-1 flex justify-center items-start pt-4">
@@ -74,6 +76,7 @@ const TinderLikeView = ({
             setCards={setCards}
             onLike={onLike}
             onDislike={onDislike}
+            autoOpenPages={autoOpenPages}
           />
         </div>
       </div>

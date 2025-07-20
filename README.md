@@ -95,6 +95,10 @@ npm run dev
    
 Then, to use the search engine, navigate to http://localhost:5173 in your web browser.
 
+Alernatively, you can use the script `start.sh` to start the frontend automatically:
+```bash
+./start.sh
+```
 
 ## Testing
 To run the tests, you can use pytest and run the following command in the root directory of the project:
