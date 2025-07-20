@@ -1,10 +1,11 @@
 from __future__ import annotations
-
-from typing import Dict, List, Sequence, Tuple, Union, Optional
+import torch
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 from retrieval_engine.enhancement import CrossEncoderReRanker, RocchioPRF
 from retrieval_engine.fusion import ReciprocalRankFusion
 from retrieval_engine.retrievers import BM25Retriever, DenseRetriever
+from retrieval_engine.docs.document_store import Document, DocumentStore
 
 
 class RetrievalEngine:
@@ -12,12 +13,6 @@ class RetrievalEngine:
     Implements a retrieval engine that combines sparse and dense retrieval methods
     with optional pseudo-relevance feedback (PRF) and re-ranking for improved
     search results.
-
-    The class integrates multiple retrieval submodules: BM25Retriever for sparse
-    retrieval, DenseRetriever for dense retrieval, Reciprocal Rank Fusion (RRF)
-    for combining retrieval scores, optionally RocchioPRF for query refinement and
-    CrossEncoderReRanker for re-ranking results. It is designed to perform a multi-step
-    search process where each component can be tailored as needed.
 
     Attributes:
         bm25 (BM25Retriever): The BM25 retriever for sparse retrieval.
@@ -27,11 +22,12 @@ class RetrievalEngine:
         prf (RocchioPRF | None): The PRF module for refining queries, if used.
         use_rerank (bool): Flag indicating whether to use re-ranking.
         reranker (CrossEncoderReRanker | None): The re-ranker for final result adjustment, if used.
+        store (DocumentStore): Stores and manages all documents in memory.
     """
 
     def __init__(
             self,
-            bm25_params: Union[Dict[str, Union[float, int]], None] = None,
+            bm25_params: Optional[Dict[str, Union[float, int]]] = None,
             dense_model_name: str = "all-MiniLM-L6-v2",
             rrf_k: int = 60,
             use_prf: bool = False,
@@ -43,43 +39,47 @@ class RetrievalEngine:
         Initialize the retrieval engine with specified parameters.
 
         Parameters:
-            bm25_params (Dict[str, Union[float, int]] | None): Parameters for BM25 retriever.
-            dense_model_name (str): The name of the dense retriever model (default: "all-MiniLM-L6-v2").
-            rrf_k (int): The top k results to consider in Reciprocal Rank Fusion (default: 60).
-            use_prf (bool): Whether to apply pseudo-relevance feedback (PRF) to the search results (default: False).
-            prf_params (Dict[str, float] | None): Optional parameters for initializing the PRF module.
-            use_rerank (bool): Whether to apply re-ranking to the final results (default: False).
-            rerank_params (Dict[str, Union[str, int, bool]] | None): Optional parameters for initializing the re-ranker.
-
+            bm25_params: Optional parameters for BM25 retriever (k1, b, use_numpy).
+                If None, uses default BM25 parameters.
+            dense_model_name: The name of the sentence transformer model for dense retrieval.
+                Defaults to "all-MiniLM-L6-v2", a lightweight and efficient model.
+            rrf_k: The k parameter for Reciprocal Rank Fusion, controlling how quickly
+                the reciprocal term decays (default: 60).
+            use_prf: Whether to apply Rocchio pseudo-relevance feedback for query expansion.
+                When enabled, uses top retrieved documents to refine the query (default: False).
+            prf_params: Optional parameters for the Rocchio PRF module (alpha, beta, gamma).
+                If None, uses default Rocchio parameters.
+            use_rerank: Whether to apply cross-encoder re-ranking to final results.
+                Improves precision but increases computational cost (default: False).
+            rerank_params: Optional parameters for the cross-encoder re-ranker
+                (model_name, batch_size, device, normalize). If None, uses defaults.
         """
-        # Initialize the retrieval components
+        self.store = DocumentStore()
         self.bm25 = BM25Retriever(**(bm25_params or {}))
-        self.dense = DenseRetriever(model_name=dense_model_name)
+        self.dense = DenseRetriever(model_name=dense_model_name, device="cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
         self.rrf = ReciprocalRankFusion(k=rrf_k)
 
-        # When using PRF, initialize the RocchioPRF module
+        # Initialize pseudo-relevance feedback if enabled
         self.use_prf = use_prf
         self.prf = RocchioPRF(**(prf_params or {})) if use_prf else None
 
-        # When using re-ranking, initialize the CrossEncoderReRanker module
+        # Initialize re-ranking if enabled
         self.use_rerank = use_rerank
         self.reranker = (
             CrossEncoderReRanker(**(rerank_params or {})) if use_rerank else None
         )
 
-    def fit(self, corpus: Sequence[str]) -> None:
+    def fit(self, corpus: Sequence[Document]) -> None:
         """
         Build the index for the given corpus and fit the retrievers.
 
         Parameters:
-            corpus (Sequence[str]): A sequence of documents to index. Each document is a string.
+            corpus (Sequence[Document]): A sequence of Document objects to index.
         """
-        # Convert the corpus to a list for consistent indexing
-        corpus_list = list(corpus)
-
-        # Fit the BM25 and dense retrievers with the corpus
+        for doc in corpus:
+            self.store.add_document(doc)
         self.bm25.fit(docs=corpus)
-        self.dense.fit(corpus=corpus_list)
+        self.dense.fit(corpus=corpus)
 
     def search(
             self,
@@ -87,7 +87,7 @@ class RetrievalEngine:
             bm25_top_k: int = 300,
             dense_top_k: int = 300,
             final_top_k: int = 100,
-    ) -> List[Tuple[str, float]]:
+    ) -> List[Document]:
         """
         Execute the complete retrieval pipeline and return top documents with their scores.
 
@@ -98,52 +98,54 @@ class RetrievalEngine:
             final_top_k (int): The number of final top documents to return after fusion and re-ranking (default: 100).
 
         Returns:
-            List[Tuple[str, float]]: A list of tuples containing document IDs and their scores,
-                                     sorted by relevance to the query.
+            List[Tuple[Document, float]]: A list of tuples containing Document objects and their scores,
+                                          sorted by relevance to the query.
         """
-        # Query both BM25 and dense retrievers
-        dense_hits = self.dense.query(
-            query,
-            top_k=dense_top_k
-        )
-        bm25_ids, _ = self.bm25.query(
-            query,
-            top_k=bm25_top_k
-        )
+        # Step 1: Get candidates from both retrievers
+        dense_hits = self.dense.query(query=query, top_k=dense_top_k)
+        bm25_hits = self.bm25.query(query=query, top_k=bm25_top_k)
 
-        #
-        dense_ids = [str(doc_id) for doc_id, _, _ in dense_hits]
-        bm25_ids_str = [str(doc_id) for doc_id in bm25_ids]
+        # Extract doc URLs for fusion
+        dense_urls = [doc.url for _, _, doc in dense_hits]
+        bm25_urls = [doc.url for doc in bm25_hits]
 
+        # Step 2: RRF fusion
         fused = self.rrf.fuse(
-            [bm25_ids_str, dense_ids],
+            [bm25_urls, dense_urls],
             top_k=max(final_top_k, bm25_top_k, dense_top_k),
             return_scores=True,
         )
 
+        # Step 3: Optional PRF (Pseudo-Relevance Feedback)
         if self.use_prf and fused:
-            top_doc_ids = [doc_id for doc_id, _ in fused[:10]]
-            top_doc_texts = [doc for doc_id, doc in self.bm25.get_docs([int(did) for did in top_doc_ids])]
-            rel_vectors = self.dense.embed_documents(top_doc_texts)
+            top_urls = [url for url, _ in fused[:10]]
+            top_docs = self.store.get_by_ids(top_urls)
+            rel_vecs = self.dense.embed_documents([doc.to_text() for doc in top_docs])
             query_vec = self.dense.embed_query(query)
-            refined_vec = self.prf.refine(query_vec, rel_vectors)
-
+            refined_vec = self.prf.refine(query_vec, rel_doc_vecs=rel_vecs)
             dense_hits_refined = self.dense.search_from_vector(refined_vec, top_k=dense_top_k)
-            dense_ids_refined = [str(doc_id) for doc_id, _, _ in dense_hits_refined]
+            dense_urls_refined = [doc.url for _, _, doc in dense_hits_refined]
 
             fused = self.rrf.fuse(
-                [bm25_ids_str, dense_ids_refined],
+                [bm25_urls, dense_urls_refined],
                 top_k=max(final_top_k, bm25_top_k, dense_top_k),
                 return_scores=True,
             )
 
-        if self.use_rerank and fused:
-            doc_ids = [int(doc_id) for doc_id, _ in fused[:final_top_k]]
-            docs_text = self.bm25.get_docs(doc_ids)
-            reranked = self.reranker.rerank(query, docs_text, top_n=final_top_k)
-            fused_dict = dict(fused)
-            final_hits = [(doc_id, fused_dict.get(doc_id, 0.0)) for doc_id, _ in reranked]
+        # Step 4: Re-ranking or plain scoring
+        final_urls = [url for url, _ in fused[:final_top_k]]
+        final_docs = self.store.get_by_ids(final_urls)
+
+        if self.use_rerank:
+            reranked = self.reranker.rerank(query=query, doc_pairs=final_docs, top_n=final_top_k)
+            final_hits = [
+                self.store.get_by_ids([doc_id])[0]
+                for doc_id, _ in reranked
+            ]
         else:
-            final_hits = fused[:final_top_k]
+            final_hits = [
+                doc
+                for doc in final_docs
+            ]
 
         return final_hits

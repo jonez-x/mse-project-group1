@@ -1,5 +1,6 @@
 import React, { forwardRef, useImperativeHandle } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
+import missingUpImg from "../assets/img/missing_up.png";
 
 type CardType = {
   id: number; // rank of the card
@@ -7,6 +8,7 @@ type CardType = {
   favicon?: string; // Optional favicon property
   title?: string; // Optional title property
   description?: string; // Optional description property
+  image?: string; // Optional image property
   word_dictionary?: Record<string, number>; // Optional word dictionary for translations
 };
 
@@ -17,6 +19,7 @@ type SwipeCardsProps = {
   setCards: React.Dispatch<React.SetStateAction<CardType[]>>;
   onLike: (card: CardType) => void;
   onDislike: (card: CardType) => void;
+  autoOpenPages: boolean;
 };
 
 export type SwipeCardsRef = {
@@ -24,7 +27,7 @@ export type SwipeCardsRef = {
   swipeRight: () => void;
 };
 
-const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards, onLike, onDislike }, ref) => {
+const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards, onLike, onDislike, autoOpenPages}, ref) => {
   const animateSwipe = (direction: 'left' | 'right', topCard: CardType) => {
     const cardElement = document.querySelector(`[data-card-id="${topCard.id}"]`) as HTMLElement;
     if (cardElement) {
@@ -41,7 +44,10 @@ const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards
         if (direction === 'left') {
           onDislike(topCard);
         } else {
-          window.open(topCard.url, '_blank');
+            // Only open the page automatically if autoOpenPages is true
+            if (autoOpenPages) {
+              window.open(topCard.url, '_blank');
+            }
           onLike(topCard);
         }
         setCards((prev) => prev.filter((card) => card.id !== topCard.id));
@@ -51,7 +57,9 @@ const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards
       if (direction === 'left') {
         onDislike(topCard);
       } else {
-        window.open(topCard.url, '_blank');
+        if (autoOpenPages) {
+          window.open(topCard.url, '_blank');
+        }
         onLike(topCard);
       }
       setCards((prev) => prev.filter((card) => card.id !== topCard.id));
@@ -91,6 +99,7 @@ const SwipeCards = forwardRef<SwipeCardsRef, SwipeCardsProps>(({ cards, setCards
           onLike={onLike}
           onDislike={onDislike}
           index={index}
+          autoOpenPages={autoOpenPages}
         />
       ))}
     </div>
@@ -103,9 +112,10 @@ type CardProps = CardType & {
   onLike: (card: CardType) => void;
   onDislike: (card: CardType) => void;
   index: number;
+  autoOpenPages: boolean;
 };
 
-const Card = ({ id, url, favicon, title, description, word_dictionary, setCards, cards, onLike, onDislike, index }: CardProps) => {
+const Card = ({ id, url, favicon, title, description, image, word_dictionary, setCards, cards, onLike, onDislike, index, autoOpenPages }: CardProps) => {
   const x = useMotionValue(0);
   const rotateRaw = useTransform(x, [-150, 150], [-18, 18]);
   const opacity = useTransform(x, [-150, 0, 150], [0.2, 1, 0.2]);
@@ -118,10 +128,12 @@ const Card = ({ id, url, favicon, title, description, word_dictionary, setCards,
   });
 
   const handleDragEnd = () => {
-    const currentCard = { id, url, favicon, title, description, word_dictionary };
+    const currentCard = { id, url, favicon, title, description, image, word_dictionary };
     
     if (x.get() > 100 ){
-      open(url, '_blank');
+      if (autoOpenPages) {
+        open(url, '_blank');
+      }
       onLike(currentCard);
     } else if (x.get() < -100) { 
       onDislike(currentCard);
@@ -167,9 +179,26 @@ const Card = ({ id, url, favicon, title, description, word_dictionary, setCards,
     >
       {/* Background image */}
       <img
-        src={url}
+        src={image || url || missingUpImg}
         alt="Card background"
         className="absolute inset-0 h-full w-full object-cover z-0 pointer-events-none"
+        style={{
+          objectPosition: (image || url) ? 'center top' : 'center'
+        }}
+        onError={(e) => {
+          console.log('Image failed to load:', image || url);
+          // If main image fails, try the URL as fallback, then missing image
+          if (image && e.currentTarget.src === image) {
+            e.currentTarget.src = url;
+          } else if (e.currentTarget.src === url) {
+            e.currentTarget.src = missingUpImg;
+            // Use center position for missing image
+            e.currentTarget.style.objectPosition = 'center';
+          }
+        }}
+        onLoad={() => {
+          console.log('Image loaded successfully:', image || url);
+        }}
       />
 
       {/* Word dictionary features at the top */}
@@ -230,7 +259,7 @@ const Card = ({ id, url, favicon, title, description, word_dictionary, setCards,
             />
           )}
           <h2 className="text-lg font-semibold">
-            {title + `Card #${id}`}
+            {title || "Untitled"}
           </h2>
         </div>
         <div> 
