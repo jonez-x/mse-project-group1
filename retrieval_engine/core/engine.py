@@ -1,5 +1,5 @@
 from __future__ import annotations
-import torch
+
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 from retrieval_engine.enhancement import CrossEncoderReRanker, RocchioPRF
@@ -56,7 +56,7 @@ class RetrievalEngine:
         """
         self.store = DocumentStore()
         self.bm25 = BM25Retriever(**(bm25_params or {}))
-        self.dense = DenseRetriever(model_name=dense_model_name, device="cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+        self.dense = DenseRetriever(model_name=dense_model_name, device=None)   # use best available device
         self.rrf = ReciprocalRankFusion(k=rrf_k)
 
         # Initialize pseudo-relevance feedback if enabled
