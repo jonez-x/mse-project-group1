@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urljoin, urlparse
+from simhash import Simhash
 
 from logger import Logger
 # from readability import Document
@@ -68,6 +69,9 @@ class Crawler:
 
         self.sema_base_urls = asyncio.Semaphore()
         self.sema_frontier = asyncio.Semaphore()
+
+        self.simhashes = []
+        self.simhashe_threshold = 3     # adjust for granularity
 
     def load_state(self):
         if os.path.exists(self.state_loc):
@@ -152,6 +156,16 @@ class Crawler:
         robot.parse(robots_txt.splitlines())
 
         return robot
+    
+    # Function to compare simhash against allready seen simhashes
+    async def compare_simhashes(self, simhash):
+        # Check by thresholding
+        for seen_simh in self.simhashes:
+            if simhash.distance(seen_simh) <= self.simhashe_threshold:
+                await self.logger.print_msg("DUBLICATE CONTEND", "i")
+                return True
+        self.simhashes.append(simhash)
+        return False
 
     async def parse(self, url, html):
         soup = BeautifulSoup(html, 'html.parser')
@@ -164,6 +178,11 @@ class Crawler:
 
         content = visible_text(html)
         await self.logger.print_msg(f"LANG: {lang}, TITLE: {title}", "i")
+
+        # Check simhash over document text against seen simhashes
+        simh = Simhash(content)
+        if await self.compare_simhashes(simh):
+            return
 
         for link_tag in soup.find_all("a"):
             link = urljoin(url, link_tag.get("href"))
