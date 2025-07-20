@@ -1,227 +1,187 @@
-from datetime import datetime
+import gzip
 import logging
-from typing import Any, Dict, List, Optional
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import uvicorn
-from retrieval_engine.core.engine import RetrievalEngine
-from retrieval_engine.docs.document_store import DocumentStore, Document
+from typing import List, Optional, Dict
 import duckdb
+from retrieval_engine.core.engine import RetrievalEngine
+from retrieval_engine.docs.document_store import Document
 from contextlib import asynccontextmanager
+import uvicorn
+from collections import Counter
+import re
 
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+retriever_v1: Optional[RetrievalEngine] = None
+retriever_v2: Optional[RetrievalEngine] = None
 
 
-document_store: Optional[DocumentStore] = None
-retrieval_engine: Optional[RetrievalEngine] = None
+def compute_tf(text: str) -> Dict[str, int]:
+    tokens = re.findall(r"\b\w+\b", text.lower())
+    return dict(Counter(tokens))
+
+def load_documents_v1() -> List[Document]:
+    con = duckdb.connect("crawler/tuebingen_crawl.duckdb")
+    rows = con.execute("SELECT url, title, excerpt, main_image, favicon FROM main.crawl_results").fetchall()
+
+    documents = []
+    for url, title, excerpt, img, favicon in rows:
+        tf = compute_tf((title or "") + " " + (excerpt or ""))
+        doc = Document(url, title, excerpt, img, favicon)
+        doc.word_dict = tf
+        documents.append(doc)
+    return documents
+
+
+
+def load_documents_v2() -> List[Document]:
+    con = duckdb.connect("crawler/crawler_2/data.db")
+    rows = con.execute("SELECT link, title, content FROM main.documents").fetchall()
+
+    documents = []
+    for link, title, blob in rows:
+        try:
+            content = gzip.decompress(blob).decode("utf-8", errors="ignore")
+        except Exception:
+            content = ""
+
+        excerpt = content[:300]
+        tf = compute_tf((title or "") + " " + content)
+        doc = Document(
+            url=link,
+            title=title,
+            excerpt=excerpt,
+            main_image=None,
+            favicon=None
+        )
+        doc.word_dict = tf  # <--- hinzugefügt
+        documents.append(doc)
+    return documents
+
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    global document_store, retrieval_engine
-    logger.info("Loading documents from DuckDB...")
+    global retriever_v1, retriever_v2
 
-    document_store = DocumentStore()
+    # v1: Tübingen Crawler
+    docs1 = load_documents_v1()
+    retriever_v1 = RetrievalEngine(use_prf=True, use_rerank=True)
+    retriever_v1.fit(docs1)
+    logger.info(f"Loaded {len(docs1)} documents from v1.")
 
-    try:
-        con = duckdb.connect("crawler/tuebingen_crawl.duckdb")
-        rows = con.execute("SELECT url, title, excerpt, main_image, favicon FROM main.crawl_results").fetchall()
-
-        for row in rows:
-            doc = Document(*row)
-            document_store.add_document(doc)
-
-        logger.info(f"Loaded {len(document_store.get_all())} documents.")
-
-        retrieval_engine = RetrievalEngine(use_prf=False, use_rerank=False)
-        retrieval_engine.fit(document_store.get_all())
-    except Exception as e:
-        logger.error(f"Startup failed: {e}")
-        raise
+    # v2: Gzipped Content
+    docs2 = load_documents_v2()
+    retriever_v2 = RetrievalEngine(use_prf=True, use_rerank=True)
+    retriever_v2.fit(docs2)
+    logger.info(f"Loaded {len(docs2)} documents from v2.")
 
     yield
 
-    logger.info("Shutting down...")
 
+app = FastAPI(title="Tübingen Search API", version="2.0", lifespan=lifespan)
 
-app = FastAPI(
-    title="Tübingen Search API",
-    version="1.0.0",
-    lifespan=lifespan
-)
-
-# CORS middleware - allow frontend to connect
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React dev server
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-# Pydantic models for request/response
+class Doc(BaseModel):
+    id: int
+    url: str
+    favicon: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    word_dictionary: Optional[Dict[str, int]] = None
+
+
+
 class SearchResponse(BaseModel):
-    results: List[str]
-
-
-class CrawlRequest(BaseModel):
-    urls: List[str]
-    max_pages: Optional[int] = 1000
+    results: List[Doc]
 
 
 class BatchSearchRequest(BaseModel):
     queries: List[str]
 
 
-# Placeholder functions that need to be implemented
-def crawl(frontier, index):
-    # TODO: Implement crawler functionality
-    pass
+def tokenize(text: str) -> List[str]:
+    return re.findall(r"\b\w+\b", text.lower())
 
-
-def index(doc, index_path):
-    # TODO: Implement indexing functionality
-    pass
-
-
-def retrieve(query, index_path):
-    # TODO: Implement retrieval logic
-    # Return mock data for now
+def build_docs(docs: List[Document], query: str) -> List[Doc]:
+    query_words = set(tokenize(query))
     return [
-        f"Result 1 for '{query}'",
-        f"Result 2 for '{query}'",
-        f"Result 3 for '{query}'"
+        Doc(
+            id=i + 1,
+            url=doc.url,
+            title=doc.title,
+            description=doc.excerpt,
+            favicon=doc.favicon,
+            word_dictionary={
+                word: count for word, count in getattr(doc, "word_dict", {}).items()
+                if word in query_words
+            }
+        )
+        for i, doc in enumerate(docs)
     ]
 
 
-def batch(results):
-    # TODO: Implement batch processing
-    pass
 
 
+# --- API Router für v1 ---
+router_v1 = APIRouter(prefix="/v1", tags=["v1"])
+
+@router_v1.get("/search", response_model=SearchResponse)
+async def search_v1(q: str = Query(...)):
+    results = retriever_v1.search(q)
+    return SearchResponse(results=build_docs(results, q))
 
 
-@app.get("/")
-async def root():
-    """Root endpoint with API information"""
+@router_v1.post("/batch-search")
+async def batch_search_v1(request: BatchSearchRequest):
+    batch_results = {}
+    for i, query in enumerate(request.queries, 1):
+        results = retriever_v1.search(query)
+        batch_results[f"query_{i}"] = build_docs(results, query)
+
     return {
-        "name": "Tübingen Search API",
-        "version": "1.0.0",
-        "description": "Web crawling and search system for Tübingen content",
-        "endpoints": {
-            "search": "/search?q=query",
-            "crawl": "/crawl",
-            "batch_search": "/batch-search",
-            "health": "/health"
-        }
+        "message": "Batch search completed",
+        "num_queries": len(request.queries),
+        "results": batch_results
     }
 
 
-@app.get("/search", response_model=SearchResponse)
-async def search(q: str = Query(..., min_length=1, description="Search query")) -> SearchResponse:
-    """
-    Method to search for documents (GET request) using a query string.
-    
-    :param q: Search query string
-    :returns: A SearchResponse object containing the results
-    """
-    try:
-        logger.info(f"Received search query: {q}")
+# --- API Router für v2 ---
+router_v2 = APIRouter(prefix="/v2", tags=["v2"])
 
-        # TODO: Replace with actual retrieval logic when crawler/retriever is implemented
-        # For now, return simple test results that match frontend expectations
-
-        # Simple test logic for frontend testing - REMOVE WHEN IMPLEMENTING REAL SEARCH
-        if q == "result1":
-            return SearchResponse(results=["result1"])
-        elif q == "result2":
-            return SearchResponse(results=["result2"])
-        elif q == "result3":
-            return SearchResponse(results=["result3"])
-
-        # Default mock results
-        results = retrieve(q, index_path="data/index")
-        return SearchResponse(results=results)
-
-    except Exception as e:
-        logger.error(f"Error processing search query '{q}': {str(e)}")
-        raise HTTPException(status_code=500, detail="Search failed")
+@router_v2.get("/search", response_model=SearchResponse)
+async def search_v2(q: str = Query(...)):
+    results = retriever_v2.search(q)
+    return SearchResponse(results=build_docs(results, q))
 
 
-@app.post("/crawl")
-async def start_crawl(request: CrawlRequest) -> Dict[str, Any]:
-    """
-    Start a web crawl with the provided seed URLs and options (POST request).
+@router_v2.post("/batch-search")
+async def batch_search_v2(request: BatchSearchRequest):
+    batch_results = {}
+    for i, query in enumerate(request.queries, 1):
+        results = retriever_v2.search(query)
+        batch_results[f"query_{i}"] = build_docs(results, query)
 
-    :param request: A CrawlRequest object containing URLs and options
-    :returns: Status message indicating crawl has started
-    """
-    try:
-        logger.info(f"Starting crawl with {len(request.urls)} seed URLs")
-
-        # TODO: Implement actual crawling
-        # For now, return success message
-        frontier = {
-            "urls": request.urls,
-            "max_pages": request.max_pages
-        }
-
-        # crawl(frontier, "data/index")  # Uncomment once it is implemented
-
-        return {
-            "message": "Crawling started",
-            "seed_urls": request.urls,
-            "max_pages": request.max_pages,
-            "status": "started"
-        }
-
-    except Exception as e:
-        logger.error(f"Error starting crawl: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to start crawling")
-
-
-@app.post("/batch-search")
-async def batch_search(request: BatchSearchRequest):
-    """
-    Method to perform batch search on multiple queries at once (POST request).
-
-    :param request: A BatchSearchRequest object containing list of queries
-    :returns: A dictionary with batch search results
-    """
-    try:
-        logger.info(f"Processing batch search with {len(request.queries)} queries")
-
-        # TODO: Implement actual batch processing
-        results = {}
-        for i, query in enumerate(request.queries, 1):
-            results[f"query_{i}"] = retrieve(query, "data/index")
-
-        return {
-            "message": "Batch search completed",
-            "num_queries": len(request.queries),
-            "results": results
-        }
-
-    except Exception as e:
-        logger.error(f"Error in batch search: {str(e)}")
-        raise HTTPException(status_code=500, detail="Batch search failed")
-
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
     return {
-        "status": "healthy",
-        "timestamp": str(datetime.now()),
-        "version": "1.0.0",
-        "message": "API is running",
+        "message": "Batch search completed",
+        "num_queries": len(request.queries),
+        "results": batch_results
     }
+
+
+app.include_router(router_v1)
+app.include_router(router_v2)
 
 
 if __name__ == "__main__":
