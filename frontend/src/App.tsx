@@ -36,9 +36,29 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [autoOpenPages, setAutoOpenPages] = useState(false);
+  const [isSearchEngineReady, setIsSearchEngineReady] = useState(false);
   const cardsToShow = 7; // Variable to control how many cards to show
   const [key, setKey] = useState(0); // Force re-render key
   const swipeCardsRef = useRef<SwipeCardsRef>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Check if search engine is ready on component mount
+  useEffect(() => {
+    const checkSearchEngineStatus = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/v2/search?q=test`);
+        if (response.ok) {
+          setIsSearchEngineReady(true);
+        }
+      } catch (error) {
+        console.log('Search engine not ready yet, will retry...');
+        // Retry every 2 seconds until ready
+        setTimeout(checkSearchEngineStatus, 2000);
+      }
+    };
+    
+    checkSearchEngineStatus();
+  }, []);
 
   // API function to search
   const searchAPI = async (query: string, version: string = 'v2'): Promise<CardType[]> => {
@@ -89,43 +109,48 @@ const App = () => {
     }
   }, [cards, showCards, viewMode, allSearchResults, likedCards, dislikedCards, cardsToShow]);
 
-  const handleSearch = async () => {
-    // Only search if there's a query
-    if (searchQuery.trim()) {
-      // Clear liked and disliked arrays when searching
-      setLikedCards([]);
-      setDislikedCards([]);
+  const launchSearch = async () => {
+    // Only search if there's a query and search engine is ready
+    if (!searchQuery.trim() || !isSearchEngineReady) return;
+
+    // Remove focus from input to hide caret
+    inputRef.current?.blur();
+    
+    // Clear liked and disliked arrays when searching
+    setLikedCards([]);
+    setDislikedCards([]);
+    
+    try {
+      const searchResults = await searchAPI(searchQuery);
       
-      try {
-        const searchResults = await searchAPI(searchQuery);
+      if (searchResults.length > 0) {
+        setAllSearchResults(searchResults);
         
-        if (searchResults.length > 0) {
-          setAllSearchResults(searchResults);
-          
-          if (viewMode === 'tinder') {
-            // For Tinder mode, show first few cards
-            const initialCards = searchResults.slice(0, cardsToShow).reverse();
-            setCards(initialCards);
-          } else {
-            // For list mode, show all results
-            setCards(searchResults);
-          }
-          
-          setShowCards(true);
-          setKey(prev => prev + 1); // Force SwipeCards to re-render
+        if (viewMode === 'tinder') {
+          // For Tinder mode, show first few cards
+          const initialCards = searchResults.slice(0, cardsToShow).reverse();
+          setCards(initialCards);
+        } else {
+          // For list mode, show all results
+          setCards(searchResults);
         }
-      } catch (err) {
-        console.error('Search failed:', err);
+        
+        setShowCards(true);
+        setKey(prev => prev + 1); // Force SwipeCards to re-render
       }
+    } catch (err) {
+      console.error('Search failed:', err);
     }
   };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            handleSearch();
-        }
-    };
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      launchSearch();
+    }
+  };
+
+  const handleSearchClick = () => launchSearch();
 
     const handleDislikeClick = () => {
         swipeCardsRef.current?.swipeLeft();
@@ -138,7 +163,11 @@ const App = () => {
     // Add keyboard event listener for arrow keys (only in Tinder mode)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (!showCards || viewMode !== 'tinder') return; // Only allow swiping when cards are shown and in Tinder mode
+            // Don't allow swiping if user is typing in the search input
+            const activeElement = document.activeElement;
+            const isTypingInInput = activeElement && activeElement.tagName === 'INPUT';
+            
+            if (!showCards || viewMode !== 'tinder' || isTypingInInput) return; // Only allow swiping when cards are shown and in Tinder mode and not typing
 
             if (e.key === "ArrowLeft") {
                 e.preventDefault();
@@ -227,17 +256,28 @@ const App = () => {
 
                 <div className="relative w-full max-w-md">
                     <input
+                        ref={inputRef}
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Search for anything..."
-                        className="w-full h-14 pl-6 pr-14 rounded-full bg-neutral/70 backdrop-blur-md border border-white/20 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent text-gray-800 placeholder-gray-500 transition-all duration-300"
+                        onKeyDown={handleKeyDown}
+                        placeholder={isSearchEngineReady ? "Search for anything..." : "Search engine is initializing..."}
+                        disabled={!isSearchEngineReady || isLoading}
+                        className={`w-full h-14 pl-6 pr-14 rounded-full backdrop-blur-md border shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent text-gray-800 placeholder-gray-500 transition-all duration-300 ${
+                            !isSearchEngineReady || isLoading 
+                                ? 'bg-gray-300/70 border-gray-200/20 cursor-not-allowed' 
+                                : 'bg-neutral/70 border-white/20'
+                        }`}
                     />
                     {/* Search Icon Button */}
                     <button
-                        onClick={handleSearch}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 rounded-full bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-colors duration-200 flex items-center justify-center group"
+                        onClick={handleSearchClick}
+                        disabled={!isSearchEngineReady || isLoading}
+                        className={`absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-colors duration-200 flex items-center justify-center group ${
+                            !isSearchEngineReady || isLoading
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-blue-500 hover:bg-blue-600'
+                        }`}
                     >
                         <svg
                             className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-200"
@@ -267,7 +307,22 @@ const App = () => {
             </div>
 
       {/* Main Content Area */}
-      {isLoading && (
+      {!isSearchEngineReady && (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">Initializing Search Engine</h2>
+            <p className="text-gray-600 max-w-md">
+              Loading and indexing documents, training models... This may take a moment.
+            </p>
+            <div className="text-sm text-gray-400 mt-4">
+              The search engine is warming up. You'll be able to search once it's ready!
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isSearchEngineReady && isLoading && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -276,7 +331,7 @@ const App = () => {
         </div>
       )}
       
-      {error && (
+      {isSearchEngineReady && error && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
@@ -292,7 +347,7 @@ const App = () => {
         </div>
       )}
 
-      {showCards && !isLoading && !error && (
+      {isSearchEngineReady && showCards && !isLoading && !error && (
         <>
           {viewMode === 'tinder' ? (
             <TinderLikeView
@@ -315,7 +370,7 @@ const App = () => {
         </>
       )}
       
-      {!showCards && !isLoading && !error && (
+      {isSearchEngineReady && !showCards && !isLoading && !error && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="text-gray-400 text-6xl mb-4">🔍</div>
