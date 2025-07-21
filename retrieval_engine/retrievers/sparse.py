@@ -133,34 +133,22 @@ class BM25Retriever:
         return self
 
     def _build_matrix(self) -> None:
-        """
-        Build a dense BM25 matrix for accelerated query processing.
-        """
-        # Create vocabulary and index mapping
         vocab = list(self.idf)
-        self._vocab_idx = {t: i for i, t in enumerate(vocab)}
+        self._vocab_idx = {term: idx for idx, term in enumerate(vocab)}
+        matrix = np.zeros((self._num_docs, len(vocab)), dtype=np.float32)
 
-        # Initialize the BM25 matrix (documents x terms)
-        mat = np.zeros((self._num_docs, len(vocab)), dtype=np.float32)
-
-        for row, toks in tqdm(enumerate(self.terms), total=self._num_docs, desc="Building BM25 matrix"):
+        for doc_idx, tokens in tqdm(enumerate(self.terms), total=self._num_docs, desc="Building BM25 matrix"):
             counts: Dict[str, int] = {}
-            for t in toks:
-                counts[t] = counts.get(t, 0) + 1
+            for token in tokens:
+                counts[token] = counts.get(token, 0) + 1
+            length = self.doc_len[doc_idx]
+            for term, tf in counts.items():
+                col_idx = self._vocab_idx[term]
+                idf_value = self.idf[term]
+                score = (tf * (self.k1 + 1)) / (tf + self.k1 * (1 - self.b + self.b * length / self.avg_len))
+                matrix[doc_idx, col_idx] = idf_value * score
 
-            # Get document length for normalization
-            L = self.doc_len[row]
-
-            # Compute BM25 score for each term in this document
-            for t, tf in counts.items():
-                col = self._vocab_idx[t]
-                idf = self.idf[t]
-                # Apply BM25 formula: IDF * (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * L / avg_len))
-                mat[row, col] = idf * (tf * (self.k1 + 1)) / (
-                    tf + self.k1 * (1 - self.b + self.b * L / self.avg_len)
-                )
-
-        self._matrix = mat
+        self._matrix = matrix
 
     def _score_doc(
             self,
@@ -220,10 +208,10 @@ class BM25Retriever:
 
         if self.use_numpy and self._matrix is not None and self._vocab_idx is not None:
             q_vec = np.zeros((len(self._vocab_idx),), dtype=np.float32)
-            for tok in q_tokens:
-                col = self._vocab_idx.get(tok)
-                if col is not None:
-                    q_vec[col] = self.idf[tok]
+            for token in q_tokens:
+                col_idx = self._vocab_idx.get(token)
+                if col_idx is not None:
+                    q_vec[col_idx] += 1
             scores = self._matrix @ q_vec
         else:
             scores = np.array([

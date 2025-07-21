@@ -39,8 +39,8 @@ def compute_tf(text: str) -> Dict[str, int]:
 
 
 def load_documents_v1() -> List[Document]:
-    con = duckdb.connect("crawler/crawler_2/final/final.db")
-    rows = con.execute("SELECT url, title, excerpt, main_image, favicon FROM main.crawl_results").fetchall()
+    con = duckdb.connect("/crawler/crawler_2/final/final.db")
+    rows = con.execute("SELECT url, title, excerpt, main_image, favicon FROM main.documents_filtered3").fetchall()
 
     documents = []
     for url, title, excerpt, img, favicon in rows:
