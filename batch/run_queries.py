@@ -7,11 +7,11 @@ from retrieval_engine.docs.document_store import Document
 
 INPUT_FILE = "queries/queries.txt"
 OUTPUT_FILE = "results/results.txt"
-DB_PATH = "../crawler/crawler_2/final/final.db"
+DB_PATH = "../crawler/crawler_2/final/data.db"
 
 def load_documents() -> List[Document]:
     con = duckdb.connect(DB_PATH)
-    rows = con.execute("SELECT link, title, content, image_url FROM main.documents").fetchall()
+    rows = con.execute("SELECT link, title, content, image_url FROM main.documents_filtered3").fetchall()
 
     documents = []
     for link, title, blob, image_url in rows:
