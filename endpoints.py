@@ -170,8 +170,12 @@ router_v1 = APIRouter(prefix="/v1", tags=["v1"])
 
 @router_v1.get("/search", response_model=SearchResponse)
 async def search_v1(q: str = Query(...)):
-    results = retriever_v1.search(q)
-    return SearchResponse(results=build_docs(results, q))
+    raw_results = retriever_v1.search(q)
+    docs = [
+        entry[0] if isinstance(entry, tuple) and len(entry) == 2 else entry
+        for entry in raw_results
+    ]
+    return SearchResponse(results=build_docs(docs, q))
 
 app.include_router(router_v1)
 
