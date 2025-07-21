@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { type CardType, type SwipeCardsRef } from "./components/SwipeCards";
 import TinderLikeView from "./components/TinderLikeView";
 import ClassicListView from "./components/ClassicListView";
+import { SimpleAutocomplete } from "./components/SimpleAutocomplete";
 import greenHeartImg from "./assets/img/greenheart.png";
 import redx from "./assets/img/redx.png";
 import logo from "./assets/img/logo.png";
@@ -24,7 +25,7 @@ interface SearchResponse {
   results: ApiDoc[];
 }
 
-const API_BASE_URL = 'http://localhost:8000';
+// const API_BASE_URL = 'http://localhost:8001';
 
 const App = () => {
   const [cards, setCards] = useState<CardType[]>([]);
@@ -47,7 +48,7 @@ const App = () => {
   useEffect(() => {
     const checkSearchEngineStatus = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/v2/search?q=test`);
+        const response = await fetch(`http://localhost:8000/v2/search?q=test`);
         if (response.ok) {
           setIsSearchEngineReady(true);
         }
@@ -67,7 +68,7 @@ const App = () => {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/${version}/search?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`http://localhost:8000/${version}/search?q=${encodeURIComponent(query)}`);
       if (!response.ok) {
         throw new Error(`Search failed: ${response.statusText}`);
       }
@@ -145,14 +146,7 @@ const App = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      launchSearch();
-    }
-  };
-
-  const handleSearchClick = () => launchSearch();
+  // Removed handleKeyDown and handleSearchClick - now handled by SimpleAutocomplete
 
     const handleDislikeClick = () => {
         swipeCardsRef.current?.swipeLeft();
@@ -259,7 +253,7 @@ const App = () => {
 
             {/* Top Search Bar */}
             <div
-                className="flex justify-center items-center gap-6 p-4 bg-neutral/50 backdrop-blur-sm border-b border-white/20">
+                className="flex justify-center items-center gap-6 p-4 bg-neutral/50 backdrop-blur-sm border-b border-white/20 relative z-[10000]">
                 {/* Dislike Button - Only show in Tinder mode */}
                 {showCards && viewMode === 'tinder' && (
                     <button
@@ -270,45 +264,41 @@ const App = () => {
                     </button>
                 )}
 
-                <div className="relative w-full max-w-md">
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder={isSearchEngineReady ? "Search for anything..." : "Search engine is initializing..."}
-                        disabled={!isSearchEngineReady || isLoading}
-                        className={`w-full h-14 pl-6 pr-14 rounded-full backdrop-blur-md border shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent text-gray-800 placeholder-gray-500 transition-all duration-300 ${
-                            !isSearchEngineReady || isLoading 
-                                ? 'bg-gray-300/70 border-gray-200/20 cursor-not-allowed' 
-                                : 'bg-neutral/70 border-white/20'
-                        }`}
-                    />
-                    {/* Search Icon Button */}
-                    <button
-                        onClick={handleSearchClick}
-                        disabled={!isSearchEngineReady || isLoading}
-                        className={`absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-colors duration-200 flex items-center justify-center group ${
-                            !isSearchEngineReady || isLoading
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-blue-500 hover:bg-blue-600'
-                        }`}
-                    >
-                        <svg
-                            className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-200"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                <div className="flex flex-col gap-2 w-full max-w-md">
+                    {/* Autocomplete Input */}
+                    <div className="relative z-[10000]">
+                        <SimpleAutocomplete
+                            value={searchQuery}
+                            onChange={setSearchQuery}
+                            onSubmit={launchSearch}
+                            placeholder={isSearchEngineReady ? "Search for anything..." : "Search engine is initializing..."}
+                            disabled={!isSearchEngineReady || isLoading}
+                        />
+                        {/* Search Icon Button */}
+                        <button
+                            onClick={launchSearch}
+                            disabled={!isSearchEngineReady || isLoading}
+                            className={`absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-colors duration-200 flex items-center justify-center group ${
+                                !isSearchEngineReady || isLoading
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-blue-500 hover:bg-blue-600'
+                            }`}
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                            />
-                        </svg>
-                    </button>
+                            <svg
+                                className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-200"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Like Button - Only show in Tinder mode */}

@@ -1,5 +1,6 @@
 import gzip
 import logging
+import argparse
 from fastapi import FastAPI, HTTPException, Query, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from nltk import download
@@ -13,6 +14,11 @@ import uvicorn
 from collections import Counter
 from nltk.corpus import stopwords
 import re
+from autocomplete_system.services.simple_autocomplete import SimpleAutocompleteService, ModelType
+from config import DEFAULT_AUTOCOMPLETE_MODEL
+
+# Global variable to store the selected model
+SELECTED_AUTOCOMPLETE_MODEL = DEFAULT_AUTOCOMPLETE_MODEL
 
 download("stopwords")
 stop_words = set(stopwords.words("english"))
@@ -22,11 +28,13 @@ logging.basicConfig(level=logging.INFO)
 
 retriever_v1: Optional[RetrievalEngine] = None
 retriever_v2: Optional[RetrievalEngine] = None
+autocomplete_service: Optional[SimpleAutocompleteService] = None
 
 
 def compute_tf(text: str) -> Dict[str, int]:
     tokens = re.findall(r"\b\w+\b", text.lower())
     return dict(Counter(tokens))
+
 
 def load_documents_v1() -> List[Document]:
     con = duckdb.connect("crawler/tuebingen_crawl.duckdb")
@@ -39,7 +47,6 @@ def load_documents_v1() -> List[Document]:
         doc.word_dict = tf
         documents.append(doc)
     return documents
-
 
 
 def load_documents_v2() -> List[Document]:
@@ -67,10 +74,9 @@ def load_documents_v2() -> List[Document]:
     return documents
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global retriever_v1, retriever_v2
+    global retriever_v1, retriever_v2, autocomplete_service
 
     # v1: Tübingen Crawler
     docs1 = load_documents_v1()
@@ -83,6 +89,12 @@ async def lifespan(app: FastAPI):
     retriever_v2 = RetrievalEngine(use_prf=True, use_rerank=True)
     retriever_v2.fit(docs2)
     logger.info(f"Loaded {len(docs2)} documents from v2.")
+
+    # Initialize autocomplete service
+    autocomplete_service = SimpleAutocompleteService(
+        default_model=ModelType.NGRAM if SELECTED_AUTOCOMPLETE_MODEL == "ngram" else ModelType.DATAMUSE
+    )
+    logger.info(f"Autocomplete service initialized. Available models: {autocomplete_service.get_available_models()}")
 
     yield
 
@@ -109,7 +121,6 @@ class Doc(BaseModel):
     document_length: Optional[int]
 
 
-
 class SearchResponse(BaseModel):
     results: List[Doc]
 
@@ -118,8 +129,24 @@ class BatchSearchRequest(BaseModel):
     queries: List[str]
 
 
+class AutocompleteSuggestion(BaseModel):
+    word: str
+    score: Optional[float]
+    type: str  # "completion" or "next_word"
+    model: str
+    full_query: str
+
+
+class AutocompleteResponse(BaseModel):
+    suggestions: List[AutocompleteSuggestion]
+    model_used: str
+    query: str
+    count: int
+
+
 def tokenize(text: str) -> List[str]:
     return re.findall(r"\b\w+\b", text.lower())
+
 
 def build_docs(docs: List[Document], query: str) -> List[Doc]:
     print(query)
@@ -139,15 +166,15 @@ def build_docs(docs: List[Document], query: str) -> List[Doc]:
                 for word, count in getattr(doc, "word_dict", {}).items()
                 if word.lower() in query_words
             },
-            document_length= len(re.findall(r"\b\w+\b", doc.excerpt.lower()))
+            document_length=len(re.findall(r"\b\w+\b", doc.excerpt.lower()))
         )
         for i, doc in enumerate(docs)
     ]
 
 
-
 # --- API Router für v1 ---
 router_v1 = APIRouter(prefix="/v1", tags=["v1"])
+
 
 @router_v1.get("/search", response_model=SearchResponse)
 async def search_v1(q: str = Query(...)):
@@ -159,6 +186,7 @@ async def search_v1(q: str = Query(...)):
 # --- API Router für v2 ---
 router_v2 = APIRouter(prefix="/v2", tags=["v2"])
 
+
 @router_v2.get("/search", response_model=SearchResponse)
 async def search_v2(q: str = Query(...)):
     results = retriever_v2.search(q)
@@ -169,5 +197,98 @@ app.include_router(router_v1)
 app.include_router(router_v2)
 
 
+# --- Autocomplete API ---
+@app.get("/autocomplete", response_model=AutocompleteResponse)
+async def get_autocomplete(
+        q: str = Query(..., description="Query text for autocomplete"),
+        model: str = Query(SELECTED_AUTOCOMPLETE_MODEL, description="Model to use: 'ngram' or 'datamuse'"),
+        max_suggestions: int = Query(5, description="Maximum number of suggestions", ge=1, le=10)
+):
+    """Get autocomplete suggestions for a query."""
+    if not autocomplete_service:
+        raise HTTPException(status_code=500, detail="Autocomplete service not initialized")
+
+    # Parse model type
+    try:
+        model_type = ModelType(model.lower())
+    except ValueError:
+        raise HTTPException(status_code=400,
+                            detail=f"Invalid model. Available: {autocomplete_service.get_available_models()}")
+
+    # Check if model is available
+    if model_type.value not in autocomplete_service.get_available_models():
+        raise HTTPException(status_code=400,
+                            detail=f"Model '{model}' not available. Available: {autocomplete_service.get_available_models()}")
+
+    try:
+        suggestions_data = autocomplete_service.get_suggestions(q, model_type, max_suggestions)
+
+        suggestions = [
+            AutocompleteSuggestion(
+                word=s["word"],
+                score=s["score"],
+                type=s["type"],
+                model=s["model"],
+                full_query=s["full_query"]
+            )
+            for s in suggestions_data
+        ]
+
+        return AutocompleteResponse(
+            suggestions=suggestions,
+            model_used=model_type.value,
+            query=q,
+            count=len(suggestions)
+        )
+
+    except Exception as e:
+        logger.error(f"Autocomplete error: {e}")
+        raise HTTPException(status_code=500, detail=f"Autocomplete failed: {str(e)}")
+
+
+@app.get("/autocomplete/models")
+async def get_available_models():
+    """Get list of available autocomplete models."""
+    if not autocomplete_service:
+        raise HTTPException(status_code=500, detail="Autocomplete service not initialized")
+
+    return {
+        "available_models": autocomplete_service.get_available_models(),
+        "default_model": autocomplete_service.default_model.value
+    }
+
+
+def parse_args():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description="Tübingen Search API")
+    parser.add_argument(
+        "--model",
+        choices=["ngram", "datamuse"],
+        default=DEFAULT_AUTOCOMPLETE_MODEL,
+        help=f"Autocomplete model to use (default: {DEFAULT_AUTOCOMPLETE_MODEL})"
+    )
+    parser.add_argument(
+        "--host",
+        default="0.0.0.0",
+        help="Host to bind to (default: 0.0.0.0)"
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="Port to bind to (default: 8000)"
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Parse command line arguments
+    args = parse_args()
+    
+    # Set the selected model globally
+    SELECTED_AUTOCOMPLETE_MODEL = args.model
+    
+    logger.info(f"Starting server with autocomplete model: {SELECTED_AUTOCOMPLETE_MODEL}")
+    
+    # Start the Backend server
+    uvicorn.run(app, host=args.host, port=args.port)
