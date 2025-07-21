@@ -1,8 +1,13 @@
 import duckdb
 import re
 import pandas as pd
+import sys
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+
+# Add project root to path for config import
+sys.path.append(str(Path(__file__).parent.parent.parent))
+from config import DUCKDB_V1_PATH as DUCKDB_PATH
 
 
 class DataLoader:
@@ -53,7 +58,6 @@ if __name__ == "__main__":
     # Example usage
     import random
 
-    from autocomplete_system.config import DUCKDB_PATH
 
     loader = DataLoader()
     texts = loader.load_duckdb_data(duckdb_path=DUCKDB_PATH)

@@ -1,9 +1,19 @@
 import pickle
 from typing import Optional, Dict, Any, List
+from pathlib import Path
 
-from models import NgramModel, AutocompleteModel
-from config import *
+from autocomplete_system.models import NgramModel, AutocompleteModel
 from autocomplete_system.data import DataLoader
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
+from config import (
+    DEFAULT_AUTOCOMPLETE_MODEL as DEFAULT_MODEL,
+    DUCKDB_V1_PATH as DUCKDB_PATH,
+    TRAINED_MODELS_DIR as SERIALIZED_DIR,
+    MAX_AUTOCOMPLETE_SUGGESTIONS as MAX_SUGGESTIONS,
+    AUTOCOMPLETE_MIN_FREQUENCY as MIN_FREQUENCY,
+    AUTOCOMPLETE_NGRAM_ORDER as NGRAM_ORDER
+)
 
 MODEL_CLASSES = {
     "ngram": lambda: NgramModel(n=NGRAM_ORDER),

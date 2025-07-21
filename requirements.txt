@@ -14,9 +14,3 @@ requests~=2.32.4
 scikit-learn~=1.7.1
 sentence-transformers~=5.0.0
 tqdm~=4.67.1
-
-# Development dependencies
-# black>=24.3
-# isort>=5.13
-# mypy>=1.10
-
