@@ -13,7 +13,7 @@ from retrieval_engine.retrievers.sparse import BM25Retriever
 LOGGER = logging.getLogger(name=__name__)
 
 
-def test_bm25_ranking(reuters_docs: List[str]):
+def test_bm25_ranking(reuters_docs: List):
     """Test BM25 indexer ranking functionality with oil prices query."""
     # Initialize and fit the BM25 indexer to the Reuters corpus
     bm25 = BM25Retriever()
@@ -23,7 +23,7 @@ def test_bm25_ranking(reuters_docs: List[str]):
     start = time.perf_counter()
     hits = bm25.query(
         query="oil prices",
-        top_k=20
+        top_k=20,
     )
     duration = time.perf_counter() - start
 
@@ -33,15 +33,15 @@ def test_bm25_ranking(reuters_docs: List[str]):
         results=hits,
         elapsed=duration,
         logger=LOGGER,
-        docs=reuters_docs
+        docs=reuters_docs,
     )
 
     # Verify that results contain relevant documents
-    assert any("oil" in reuters_docs[idx].lower() for idx in hits[0]), "Expected 'oil' in top results"
+    assert any("oil" in doc.to_text().lower() for doc in hits), "Expected 'oil' in top results"
 
 
 def test_pickle_roundtrip(
-        reuters_docs: List[str],
+        reuters_docs: List,
         tmp_path: Path,
 ):
     """Test serialization and deserialization of BM25 indexer."""
@@ -56,7 +56,10 @@ def test_pickle_roundtrip(
     # Test both original and loaded indexers
     for retriever, label in [(bm25, "orig"), (loaded, "loaded")]:
         start = time.perf_counter()
-        hits = retriever.query(query="federal reserve", top_k=10)
+        hits = retriever.query(
+            query="federal reserve",
+            top_k=10,
+        )
         elapsed = time.perf_counter() - start
 
         log_query_results(
@@ -64,8 +67,18 @@ def test_pickle_roundtrip(
             results=hits,
             elapsed=elapsed,
             logger=LOGGER,
-            docs=reuters_docs
+            docs=reuters_docs,
         )
 
-    # Verify identical results from both indexers
-    assert bm25.query(query="federal reserve", top_k=10) == loaded.query(query="federal reserve", top_k=10)
+    # Verify identical results from both indexers (compare document URLs)
+    orig_results = bm25.query(
+        query="federal reserve",
+        top_k=10,
+    )
+    loaded_results = loaded.query(
+        query="federal reserve",
+        top_k=10,
+    )
+    orig_urls = [doc.url for doc in orig_results]
+    loaded_urls = [doc.url for doc in loaded_results]
+    assert orig_urls == loaded_urls

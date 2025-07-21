@@ -16,7 +16,7 @@ LOGGER = logging.getLogger(name=__name__)
 
 
 def test_dense_ranking(
-        reuters_docs: List[str],
+        reuters_docs: List,
         search_term: str = "oil"
 ) -> None:
     """Test DenseRetriever ranking functionality with oil prices query."""
@@ -39,11 +39,11 @@ def test_dense_ranking(
         query=query,
         results=results,
         elapsed=duration,
-        logger=LOGGER
+        logger=LOGGER,
     )
 
     # Verify that results contain relevant documents
-    assert any(search_term in text.lower() for _, _, text in results), f"Expected '{search_term}' in top results"
+    assert any(search_term in doc.to_text().lower() for _, _, doc in results), f"Expected '{search_term}' in top results"
 
 
 @pytest.mark.parametrize("search_term", [
@@ -54,7 +54,7 @@ def test_dense_ranking(
     "trade"
 ])
 def test_dense_ranking_multiple_terms(
-        reuters_docs: List[str],
+        reuters_docs: List,
         search_term: str,
 ) -> None:
     """Test DenseRetriever ranking functionality with multiple search terms."""
@@ -65,7 +65,7 @@ def test_dense_ranking_multiple_terms(
 
 
 def test_dense_pickle_roundtrip(
-        reuters_docs: List[str],
+        reuters_docs: List,
         tmp_path: Path
 ) -> None:
     """Test serialization and deserialization of DenseRetriever."""
@@ -85,9 +85,9 @@ def test_dense_pickle_roundtrip(
     # Test both original and loaded retrievers
     for system, label in [(retriever, "orig"), (loaded, "loaded")]:
         start = time.perf_counter()
-        results = system.retrieve(
+        results = system.query(
             query="federal reserve",
-            top_k=10
+            top_k=10,
         )
         elapsed = time.perf_counter() - start
 
@@ -95,7 +95,7 @@ def test_dense_pickle_roundtrip(
             query=f"federal reserve ({label})",
             results=results,
             elapsed=elapsed,
-            logger=LOGGER
+            logger=LOGGER,
         )
 
     # Verify identical results from both retrievers
@@ -104,7 +104,7 @@ def test_dense_pickle_roundtrip(
 
     # Compare results with tolerance for floating point precision
     assert len(orig_results) == len(loaded_results), "Result counts should match"
-    for (orig_idx, orig_score, orig_text), (loaded_idx, loaded_score, loaded_text) in zip(orig_results, loaded_results):
-        assert orig_idx == loaded_idx, f"Document indices should match: {orig_idx} vs {loaded_idx}"
+    for (orig_doc_id, orig_score, orig_doc), (loaded_doc_id, loaded_score, loaded_doc) in zip(orig_results, loaded_results):
+        assert orig_doc_id == loaded_doc_id, f"Document IDs should match: {orig_doc_id} vs {loaded_doc_id}"
         assert abs(orig_score - loaded_score) < 1e-6, f"Scores should be very close: {orig_score} vs {loaded_score}"
-        assert orig_text == loaded_text, f"Document texts should match"
+        assert orig_doc.url == loaded_doc.url, f"Document URLs should match: {orig_doc.url} vs {loaded_doc.url}"
