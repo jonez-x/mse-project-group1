@@ -10,7 +10,9 @@
 
 ## Project Description
 
-Yet to be written here...
+This project implements a modern search engine tailored to the city of Tübingen. 
+It combines custom web crawling, multiple retrieval strategies (BM25, dense retrieval, re-ranking), 
+and an interactive frontend featuring both list and Tinder-like views with query heatmaps.
 
 ## Project Structure
 
@@ -83,7 +85,14 @@ Alternatively, use HTTPS to clone the repository:
 
 ```bash
 python3.13 -m venv .venv
-source .venv/bin/activate  # On Windows use `venv\Scripts\activate`
+source .venv/bin/activate 
+```
+
+On windows, you can use the following command to activate the virtual environment:
+
+```bash
+python3.13 -m venv .venv
+.\.venv\Scripts\activate
 ```
 
 This project was developed and tested with Python 3.13, so make sure to use this version or a compatible one.
@@ -96,7 +105,7 @@ This project was developed and tested with Python 3.13, so make sure to use this
 
 ## Usage
 
-!Important! : The database (final.zip) is zipped to reduce the size, it needs to be unzipped to start the search engine.
+**Important** : The database (final.zip) is zipped to reduce the size, it needs to be unzipped to start the search engine.
 
 1. Start the FastAPI server:
 
