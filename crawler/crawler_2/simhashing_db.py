@@ -48,7 +48,7 @@ if db_path.endswith(".zip"):
     db_path = os.path.join(os.getcwd(), duckdb_files[0])
     print(f"[INFO] Extracted DuckDB to: {db_path}")
 
-
+print(f"[INFO] Using database: {db_path}")
 # Connect to database
 con = duckdb.connect(db_path)
 
@@ -81,6 +81,7 @@ def get_ngrams(text, n=3):
 # Load whole table
 rows = con.execute(f"SELECT * FROM {table_name}").fetchall()
 column_index = {col: idx for idx, col in enumerate(columns)}
+#print(f"rows: {len(rows)}")
 
 # Store seen hashes and unique ids
 hash_list = []
@@ -118,5 +119,5 @@ con.execute(f"CREATE TABLE {filtered_table} ({column_defs});")
 placeholder = ','.join(['?'] * len(columns))
 con.executemany(f"INSERT INTO {filtered_table} VALUES ({placeholder})", unique_rows)
 
-print(f"Created table '{filtered_table}' with {len(unique_rows)} deduplicated entries.")
+print(f"Created table '{filtered_table}' with {len(unique_rows)} unique entries.")
 con.close()
