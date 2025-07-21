@@ -1,21 +1,23 @@
+import argparse
 import gzip
 import logging
-import argparse
-from fastapi import FastAPI, HTTPException, Query, APIRouter
+import re
+from collections import Counter
+from contextlib import asynccontextmanager
+from typing import Dict, List, Optional
+
+import duckdb
+import uvicorn
+from fastapi import APIRouter, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from nltk import download
-from pydantic import BaseModel
-from typing import List, Optional, Dict
-import duckdb
-from retrieval_engine.core.engine import RetrievalEngine
-from retrieval_engine.docs.document_store import Document
-from contextlib import asynccontextmanager
-import uvicorn
-from collections import Counter
 from nltk.corpus import stopwords
-import re
+from pydantic import BaseModel
+
 from autocomplete_system.services.autocomplete import AutocompleteService, ModelType
 from config import DEFAULT_AUTOCOMPLETE_MODEL
+from retrieval_engine.core.engine import RetrievalEngine
+from retrieval_engine.docs.document_store import Document
 
 # Global variable to store the selected model
 SELECTED_AUTOCOMPLETE_MODEL = DEFAULT_AUTOCOMPLETE_MODEL
@@ -93,12 +95,12 @@ async def lifespan(app: FastAPI):
     # Initialize autocomplete service
     requested_model = ModelType.NGRAM if SELECTED_AUTOCOMPLETE_MODEL == "ngram" else ModelType.DATAMUSE
     logger.info(f"Initializing autocomplete service with requested model: {SELECTED_AUTOCOMPLETE_MODEL}")
-    
+
     autocomplete_service = AutocompleteService(default_model=requested_model)
-    
+
     available_models = autocomplete_service.get_available_models()
     logger.info(f"Autocomplete service initialized. Available models: {available_models}")
-    
+
     # Validate that the requested model is actually available
     if SELECTED_AUTOCOMPLETE_MODEL not in available_models:
         logger.warning(f"Requested model '{SELECTED_AUTOCOMPLETE_MODEL}' is not available!")
@@ -298,11 +300,15 @@ def parse_args():
 if __name__ == "__main__":
     # Parse command line arguments
     args = parse_args()
-    
+
     # Set the selected model globally
     SELECTED_AUTOCOMPLETE_MODEL = args.model
-    
+
     logger.info(f"Starting server with autocomplete model: {SELECTED_AUTOCOMPLETE_MODEL}")
-    
+
     # Start the Backend server
-    uvicorn.run(app, host=args.host, port=args.port)
+    uvicorn.run(
+        app,
+        host=args.host,
+        port=args.port,
+    )

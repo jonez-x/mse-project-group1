@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Tuple, Optional
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -43,7 +43,7 @@ class AutocompleteModel(ABC):
     def train(
             self,
             texts: List[str],
-            **kwargs: Dict[str, Any],
+            **kwargs,
     ) -> None:
         """
         Build internal data structures.

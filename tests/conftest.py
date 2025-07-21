@@ -1,8 +1,14 @@
 import logging
 import os
-import pytest
+import sys
 from datetime import datetime
 from pathlib import Path
+
+import pytest
+
+# Add the project root to Python path so all packages can be found
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 
 def pytest_configure(config: pytest.Config) -> None:

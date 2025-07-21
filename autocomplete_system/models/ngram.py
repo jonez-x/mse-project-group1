@@ -1,7 +1,7 @@
 import re
 import time
 from collections import Counter, defaultdict
-from typing import List, Dict, Tuple, Any
+from typing import Any, Dict, List, Tuple
 
 from autocomplete_system.models.base import AutocompleteModel, AutocompleteResult
 
@@ -131,7 +131,7 @@ class NgramModel(AutocompleteModel):
         # If not trained, return empty suggestions --> Need to handle this in the frontend
         if not self.is_trained:
             return []
-        
+
         # Use the parent class logic
         return super().suggest(query, n_suggestions)
 

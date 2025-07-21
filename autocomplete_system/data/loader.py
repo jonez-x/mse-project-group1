@@ -1,11 +1,12 @@
-import duckdb
 import re
-import pandas as pd
 import sys
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 
-# Add project root to path for config import
+import duckdb
+import pandas as pd
+
+# Local application imports
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from config import DUCKDB_V1_PATH as DUCKDB_PATH
 
@@ -16,6 +17,7 @@ class DataLoader:
 
     This class provides methods to load text data from a DuckDB database file.
     """
+
     @staticmethod
     def load_duckdb_data(
             duckdb_path: str,
@@ -39,7 +41,8 @@ class DataLoader:
         tbl = table if table else conn.execute("SHOW TABLES").fetchone()[0]
 
         # Fetch all data from the specified table
-        df: pd.DataFrame = conn.execute(f"SELECT * FROM {tbl}").df()
+        sql_prompt = f"SELECT * FROM {tbl}"
+        df: pd.DataFrame = conn.execute(sql_prompt).df()
 
         # Iterate over the DataFrame rows and concatenate text columns
         texts: List[str] = []
@@ -57,11 +60,14 @@ class DataLoader:
 if __name__ == "__main__":
     # Example usage
     import random
-
+    import numpy as np
 
     loader = DataLoader()
     texts = loader.load_duckdb_data(duckdb_path=DUCKDB_PATH)
+
     # Print 5 random texts
+    np.random.seed(42)
+
     for text in random.sample(texts, 5):
         print(text)
         print()

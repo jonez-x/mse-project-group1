@@ -1,6 +1,6 @@
-from typing import List, Dict, Any
 import logging
 import re
+from typing import Any, Dict, List
 
 import requests
 
@@ -179,27 +179,3 @@ class DataMuseModel(AutocompleteModel):
         }
 
 
-# Example usage:
-if __name__ == "__main__":
-    model = DataMuseModel()
-
-    # Test the model with some example words
-    example_words = ["food", "movie", "tuebingen", "car", "university"]
-    for word in example_words:
-        # Test word completion (partial prefix)
-        suggestions = model.suggest(
-            query=word[:3],
-            n_suggestions=5,
-        )
-        print(f"\nSuggestions for '{word[:3]}': ")
-        for suggestion in suggestions:
-            print(f"  - {suggestion.word} (score: {suggestion.score})")
-
-        # Test next word prediction (full word + space)
-        next_word_suggestions = model.suggest(
-            query=word + " ",
-            n_suggestions=5,
-        )
-        print(f"\nNext word suggestions after '{word}': ")
-        for suggestion in next_word_suggestions:
-            print(f"  - {suggestion.word} (score: {suggestion.score}) [{suggestion.type}]")
