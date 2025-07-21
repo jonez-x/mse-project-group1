@@ -149,7 +149,6 @@ Additionally there will be a newly created .db file (data.db or another similar 
 
 The data.db file consists of an ID, URL, Title and the compressed HTML.
 The rest of the code will need another database structure. Mainly ID, URL, Title, compressed content of the HTML, image_url (if found at all).
-The structures of the data.db and final.db files created by the web crawling process can be seen in the setup.sql and new.sql files respectively, inside the folder crawler/crawler_2/.
 
 Therefore, a conversion is needed, which extracts the visible text and the main image from the HTML file. This will create a file called final.db.
 To start the conversion script, simply run:
