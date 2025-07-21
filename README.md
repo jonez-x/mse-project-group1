@@ -10,8 +10,8 @@
 
 ## Project Description
 
-This project implements a modern search engine tailored to the city of Tübingen. 
-It combines custom web crawling, multiple retrieval strategies (BM25, dense retrieval, re-ranking), 
+This project implements a modern search engine tailored to the city of Tübingen.
+It combines custom web crawling, multiple retrieval strategies (BM25, dense retrieval, re-ranking),
 and an interactive frontend featuring both list and Tinder-like views with query heatmaps.
 
 ## Project Structure
@@ -28,6 +28,10 @@ mse-project-group1/
 │   ├── services/
 │   │   └── autocomplete.py         # Autocomplete service for handling requests
 │   └── trainer.py                  # Scipt to train the autocomplete models (only for ngram)
+│
+├── batch/                          # Batch processing scripts for the search engine
+│   ├── queries/queries.txt         # Queries for batch processing 
+│   └── run_queries.py              # Script to run batch queries 
 │
 ├── crawler/                        # Web crawlers for collecting data
 │   ├── crawler_2/
@@ -54,12 +58,12 @@ mse-project-group1/
 │       └── sparse.py               # BM25 sparse retrieval
 │
 ├── tests/                          # Unit tests for the retrieval engine
+│   ├── autocomplete_system/
 │   ├── retrieval_engine/
-│   └── ... (yet to be implemented)
+│   └── conftest.py
 │
-├── config.py                       # Configuration file for the retrieval engine
-├── conftest.py
-├── endpoints.py
+├── config.py                       # Configuration file for the backend
+├── endpoints.py                    # FastAPI endpoints for the search engine
 ├── README.md
 ├── requirements.txt
 └── start.sh                        # Script to start frontend + backend
@@ -105,7 +109,8 @@ This project was developed and tested with Python 3.13, so make sure to use this
 
 ## Usage
 
-**Important** : The database (final.zip) is zipped to reduce the size, it needs to be unzipped to start the search engine.
+**Important** : The database (final.zip) is zipped to reduce the size, it needs to be unzipped to start the search
+engine.
 
 1. Start the FastAPI server:
 
@@ -113,8 +118,9 @@ This project was developed and tested with Python 3.13, so make sure to use this
 python endpoints.py
 ```
 
-For the autcompletion system, we use an API-based model as default, which is the Datamuse API. 
+For the autcompletion system, we use an API-based model as default, which is the Datamuse API.
 If you want to use the ngram model, simply set the model flag when starting the server:
+
 ```bash
 python endpoints.py --model="ngram"
 ```
@@ -132,7 +138,7 @@ npm run dev
 
 Then, to use the search engine, navigate to http://localhost:5173 in your web browser.
 
-Alernatively, you can use the script `start.sh` to start the frontend automatically:
+Alternatively, you can use the script `start.sh` to start the frontend and backend automatically:
 
 ```bash
 ./start.sh
@@ -147,20 +153,27 @@ python -m pytest tests/retrieval_engine/ -v -s
 ```
 
 ## Web Crawling
+
 To start the Web crawler simply execute the main.py in the crawler folder:
+
  ```bash
 python crawler/crawler_2/main.py
 ```
 
 The crawler will run, until there is a shutdown signal CTRL+C or the frontier is empty.
-After the crawler is finished there will be a crawl_info/ folder, which contains the visited and logged URLs in a JSON file and a log file.
-Additionally there will be a newly created .db file (data.db or another similar name), which contains the entire data of the crawling process.
+After the crawler is finished there will be a crawl_info/ folder, which contains the visited and logged URLs in a JSON
+file and a log file.
+Additionally there will be a newly created .db file (data.db or another similar name), which contains the entire data of
+the crawling process.
 
 The data.db file consists of an ID, URL, Title and the compressed HTML.
-The rest of the code will need another database structure. Mainly ID, URL, Title, compressed content of the HTML, image_url (if found at all).
+The rest of the code will need another database structure. Mainly ID, URL, Title, compressed content of the HTML,
+image_url (if found at all).
 
-Therefore, a conversion is needed, which extracts the visible text and the main image from the HTML file. This will create a file called final.db.
+Therefore, a conversion is needed, which extracts the visible text and the main image from the HTML file. This will
+create a file called final.db.
 To start the conversion script, simply run:
+
  ```bash
 python crawler/crawler_2/conversion.py
 ```
