@@ -110,7 +110,7 @@ This project was developed and tested with Python 3.13, so make sure to use this
 ## Usage
 
 **Important** : The database (final.zip) is zipped to reduce the size, it needs to be unzipped to start the search
-engine.
+engine. It should be placed in the following directory: `mse-project-group1/crawler/crawler_2/final/final.db`.
 
 1. Start the FastAPI server:
 
