@@ -96,6 +96,8 @@ This project was developed and tested with Python 3.13, so make sure to use this
 
 ## Usage
 
+# !Important! : The database (final.zip) is zipped to reduce the size, it needs to be unzipped to start the search engine.
+
 1. Start the FastAPI server:
 
 ```bash
@@ -136,8 +138,6 @@ python -m pytest tests/retrieval_engine/ -v -s
 ```
 
 ## Web Crawling
-!Important! : The database is zipped to reduce the size, it needs to be unzipped to start the search engine.
-
 To start the Web crawler simply execute the main.py in the crawler folder:
  ```bash
 python crawler/crawler_2/main.py
