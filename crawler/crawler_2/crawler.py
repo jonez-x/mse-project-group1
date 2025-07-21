@@ -176,7 +176,7 @@ class Crawler:
             return
         links = []
 
-        content = visible_text(html)
+        content = html #visible_text(html)
         await self.logger.print_msg(f"LANG: {lang}, TITLE: {title}", "i")
 
         # Check simhash over document text against seen simhashes
