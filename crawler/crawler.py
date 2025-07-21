@@ -33,13 +33,10 @@ HEADERS = {
 # Keywords to detect relevance
 KEYWORDS = [
     "tübingen", 
-    "tuebingen", 
-    "university", 
-    "uni", 
+    "tuebingen",
     "baden", 
     "württemberg", 
-    "neckar", 
-    "old town",
+    "neckar",
     "swabian",
     "swabia", 
     "tübinger", 
