@@ -91,10 +91,24 @@ async def lifespan(app: FastAPI):
     logger.info(f"Loaded {len(docs2)} documents from v2.")
 
     # Initialize autocomplete service
-    autocomplete_service = AutocompleteService(
-        default_model=ModelType.NGRAM if SELECTED_AUTOCOMPLETE_MODEL == "ngram" else ModelType.DATAMUSE
-    )
-    logger.info(f"Autocomplete service initialized. Available models: {autocomplete_service.get_available_models()}")
+    requested_model = ModelType.NGRAM if SELECTED_AUTOCOMPLETE_MODEL == "ngram" else ModelType.DATAMUSE
+    logger.info(f"Initializing autocomplete service with requested model: {SELECTED_AUTOCOMPLETE_MODEL}")
+    
+    autocomplete_service = AutocompleteService(default_model=requested_model)
+    
+    available_models = autocomplete_service.get_available_models()
+    logger.info(f"Autocomplete service initialized. Available models: {available_models}")
+    
+    # Validate that the requested model is actually available
+    if SELECTED_AUTOCOMPLETE_MODEL not in available_models:
+        logger.warning(f"Requested model '{SELECTED_AUTOCOMPLETE_MODEL}' is not available!")
+        logger.warning(f"Will fallback to available models: {available_models}")
+        if not available_models:
+            logger.error("No autocomplete models are available!")
+        else:
+            logger.info(f"Service will use: {available_models[0]} as fallback")
+    else:
+        logger.info(f"✓ Successfully loaded requested model: {SELECTED_AUTOCOMPLETE_MODEL}")
 
     yield
 

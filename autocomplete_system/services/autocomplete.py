@@ -3,6 +3,7 @@ from typing import List, Optional, Dict, Any
 from enum import Enum
 import pickle
 from pathlib import Path
+import sys
 
 from autocomplete_system.models import AutocompleteModel, DataMuseModel
 
@@ -60,6 +61,14 @@ class AutocompleteService:
                 logger.info("Ngram model loaded successfully")
             else:
                 logger.warning(f"Ngram model file not found at {NGRAM_PATH}")
+                # If ngram is requested as default model, try to train it
+                if self.default_model == ModelType.NGRAM:
+                    logger.info("Attempting to train ngram model since it was requested...")
+                    success = self._train_ngram_model()
+                    if success:
+                        logger.info("Successfully trained and loaded ngram model")
+                    else:
+                        logger.error("Failed to train ngram model, will fall back to DataMuse")
         except Exception as e:
             logger.warning(f"Failed to load ngram model: {e}")
 
@@ -155,3 +164,40 @@ class AutocompleteService:
             except Exception as e:
                 logger.error(f"Error getting model info for {model_type}: {e}")
         return None
+
+    def _train_ngram_model(self) -> bool:
+        """Train the ngram model if it doesn't exist.
+        
+        Returns:
+            bool: True if training was successful, False otherwise.
+        """
+        try:
+            # Import trainer function
+            sys.path.append(str(Path(__file__).parent.parent.parent))
+            from autocomplete_system.trainer import train_and_serialize_model
+            
+            # Create models directory if it doesn't exist
+            NGRAM_PATH.parent.mkdir(parents=True, exist_ok=True)
+            
+            logger.info("Training ngram model...")
+            
+            # Train the model
+            train_and_serialize_model(
+                model_name="ngram",
+                texts=None,  # Will use default data loader
+                verbose=True,
+            )
+            
+            # Try to load the newly trained model
+            if NGRAM_PATH.exists():
+                with open(NGRAM_PATH, "rb") as f:
+                    self.models[ModelType.NGRAM] = pickle.load(f)
+                logger.info("Successfully trained and loaded ngram model")
+                return True
+            else:
+                logger.error("Model training completed but file was not created")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Failed to train ngram model: {e}")
+            return False
