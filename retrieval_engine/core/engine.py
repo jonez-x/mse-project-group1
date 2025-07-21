@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import re
 from typing import Dict, List, Optional, Sequence, Tuple, Union
-
+from nltk import download
+from nltk.corpus import stopwords
 from retrieval_engine.enhancement import CrossEncoderReRanker, RocchioPRF
 from retrieval_engine.fusion import ReciprocalRankFusion
 from retrieval_engine.retrievers import BM25Retriever, DenseRetriever
 from retrieval_engine.docs.document_store import Document, DocumentStore
 
+download("stopwords")
+stop_words = set(stopwords.words("english"))
 
 class RetrievalEngine:
     """
@@ -77,9 +81,18 @@ class RetrievalEngine:
             corpus (Sequence[Document]): A sequence of Document objects to index.
         """
         for doc in corpus:
+            text = doc.to_text()
+            tokens = self.tokenize(text)
+            filtered_tokens = [t for t in tokens if t not in stop_words]
+            excerpt = " ".join(filtered_tokens)
+            doc.excerpt = excerpt
             self.store.add_document(doc)
+
         self.bm25.fit(docs=corpus)
         self.dense.fit(corpus=corpus)
+
+    def tokenize(self, text: str) -> List[str]:
+        return re.findall(r"\b\w+\b", text.lower())
 
     def search(
             self,
@@ -101,10 +114,15 @@ class RetrievalEngine:
             List[Tuple[Document, float]]: A list of tuples containing Document objects and their scores,
                                           sorted by relevance to the query.
         """
+
+        tokens = self.tokenize(query)
+        filtered_tokens = [token for token in tokens if token not in stop_words]
+        query = " ".join(filtered_tokens)
+        print(query)
+
         # Step 1: Get candidates from both retrievers
         dense_hits = self.dense.query(query=query, top_k=dense_top_k)
         bm25_hits = self.bm25.query(query=query, top_k=bm25_top_k)
-
         # Extract doc URLs for fusion
         dense_urls = [doc.url for _, _, doc in dense_hits]
         bm25_urls = [doc.url for doc in bm25_hits]
@@ -139,8 +157,8 @@ class RetrievalEngine:
         if self.use_rerank:
             reranked = self.reranker.rerank(query=query, doc_pairs=final_docs, top_n=final_top_k)
             final_hits = [
-                self.store.get_by_ids([doc_id])[0]
-                for doc_id, _ in reranked
+                (self.store.get_by_ids([doc_id])[0], score)
+                for doc_id, score in reranked
             ]
         else:
             final_hits = [
