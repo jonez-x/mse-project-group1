@@ -14,6 +14,9 @@ from retrieval_engine.docs.document_store import Document, DocumentStore
 download("stopwords")
 stop_words = set(stopwords.words("english"))
 
+# Compile regex to filter any writing variants of "Tübingen"
+tubingen_pattern = re.compile(r"t(?:ue|ü|u)bingen", re.IGNORECASE)
+
 class RetrievalEngine:
     """
     Implements a retrieval engine that combines sparse (BM25) and dense
@@ -131,7 +134,7 @@ class RetrievalEngine:
         """
         # Clean and filter query
         tokens = self.tokenize(query)
-        filtered_tokens = [t for t in tokens if t not in stop_words]
+        filtered_tokens = [t for t in tokens if t not in stop_words and not tubingen_pattern.search(t)]
         clean_query = " ".join(filtered_tokens)
 
         # Step 1: retrieve candidates
