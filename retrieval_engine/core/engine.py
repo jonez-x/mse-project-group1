@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from difflib import SequenceMatcher
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 from nltk import download
 from nltk.corpus import stopwords
@@ -166,4 +167,14 @@ class RetrievalEngine:
                 for doc in final_docs
             ]
 
-        return final_hits
+        unique_hits: List[Union[Document, Tuple[Document, float]]] = []
+        seen_titles: List[str] = []
+        for item in final_hits:
+            doc = item[0] if isinstance(item, tuple) else item
+            title = doc.title
+            if not any(SequenceMatcher(None, title, seen).ratio() >= 0.99 for seen in seen_titles):
+                unique_hits.append(item)
+                seen_titles.append(title)
+
+        return unique_hits
+
