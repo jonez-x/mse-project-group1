@@ -1,6 +1,5 @@
 from typing import List, Optional, Sequence
 
-
 class Document:
     def __init__(self, url: str, title: Optional[str], excerpt: Optional[str],
                  main_image: Optional[str], favicon: Optional[str]) -> None:
@@ -12,7 +11,7 @@ class Document:
 
     def to_text(self) -> str:
         """Returns the textual content used for indexing/searching."""
-        return " ".join(filter(None, [self.title, self.excerpt]))
+        return "".join(self.excerpt)
 
     def __repr__(self) -> str:
         return (
