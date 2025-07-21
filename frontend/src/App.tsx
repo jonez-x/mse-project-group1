@@ -48,7 +48,7 @@ const App = () => {
   useEffect(() => {
     const checkSearchEngineStatus = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/v2/search?q=test`);
+        const response = await fetch(`http://localhost:8000/v1/search?q=test`);
         if (response.ok) {
           setIsSearchEngineReady(true);
         }
@@ -63,7 +63,7 @@ const App = () => {
   }, []);
 
   // API function to search
-  const searchAPI = async (query: string, version: string = 'v2'): Promise<CardType[]> => {
+  const searchAPI = async (query: string, version: string = 'v1'): Promise<CardType[]> => {
     try {
       setIsLoading(true);
       setError(null);

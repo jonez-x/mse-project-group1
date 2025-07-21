@@ -48,14 +48,20 @@ const TinderLikeView = ({
                   >
                     <img
                       src={card.image || card.url || missingImg}
-                      alt={card.title || "Disliked card"}
-                      className="w-full h-32 object-cover"
+                      alt="Card thumbnail"
+                      className="w-full h-24 object-cover"
                       onError={(e) => {
-                        // If main image fails, try the URL as fallback, then missing image
-                        if (card.image && e.currentTarget.src === card.image) {
-                          e.currentTarget.src = card.url;
-                        } else if (e.currentTarget.src === card.url) {
-                          e.currentTarget.src = missingImg;
+                        console.log('Sidebar image failed to load:', card.image || card.url);
+                        e.currentTarget.src = missingImg;
+                      }}
+                      onLoad={(e) => {
+                        const img = e.currentTarget;
+                        console.log(`Sidebar image loaded: ${img.naturalWidth}x${img.naturalHeight}`);
+                        
+                        // Check if image is smaller than 100x100 pixels
+                        if (img.naturalWidth < 100 || img.naturalHeight < 100) {
+                          console.log('Sidebar image too small, replacing with missing.png');
+                          img.src = missingImg;
                         }
                       }}
                     />
@@ -109,14 +115,20 @@ const TinderLikeView = ({
                 >
                   <img
                     src={card.image || card.url || missingImg}
-                    alt={card.title || "Liked card"}
-                    className="w-full h-32 object-cover"
+                    alt="Card thumbnail"
+                    className="w-full h-24 object-cover"
                     onError={(e) => {
-                      // If main image fails, try the URL as fallback, then missing image
-                      if (card.image && e.currentTarget.src === card.image) {
-                        e.currentTarget.src = card.url;
-                      } else if (e.currentTarget.src === card.url) {
-                        e.currentTarget.src = missingImg;
+                      console.log('Sidebar image failed to load:', card.image || card.url);
+                      e.currentTarget.src = missingImg;
+                    }}
+                    onLoad={(e) => {
+                      const img = e.currentTarget;
+                      console.log(`Sidebar image loaded: ${img.naturalWidth}x${img.naturalHeight}`);
+                      
+                      // Check if image is smaller than 100x100 pixels
+                      if (img.naturalWidth < 100 || img.naturalHeight < 100) {
+                        console.log('Sidebar image too small, replacing with missing.png');
+                        img.src = missingImg;
                       }
                     }}
                   />
