@@ -197,8 +197,18 @@ const Card = ({ id, url, favicon, title, description, image, word_dictionary, do
             e.currentTarget.style.objectPosition = 'center';
           }
         }}
-        onLoad={() => {
-          console.log('Image loaded successfully:', image || url);
+        onLoad={(e) => {
+          const img = e.currentTarget;
+          console.log(`Image loaded: ${img.naturalWidth}x${img.naturalHeight}`);
+          
+          // Check if image is smaller than 100x100 pixels
+          if (img.naturalWidth < 100 || img.naturalHeight < 100) {
+            console.log('Image too small, replacing with missing_up.png');
+            img.src = missingUpImg;
+            img.style.objectPosition = 'center';
+          } else {
+            console.log('Image size OK:', image || url);
+          }
         }}
       />
 
