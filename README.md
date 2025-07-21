@@ -135,4 +135,18 @@ To run the tests, you can use pytest and run the following command in the root d
 python -m pytest tests/retrieval_engine/ -v -s
 ```
 
+## Web Crawling
+To start the Web crawler simply execute the main.py in the crawler folder:
+ ```bash
+python crawler/crawler_2/main.py
+```
 
+The crawler will run, until there is a shutdown signal CTRL+C or the frontier is empty.
+After the crawler is finished there will be a crawl_info/ folder, which contains the visited and logged URLs in a JSON file and a log file.
+
+After the crawler is done, a conversion is needed, which extracts the visible text and the main image from the HTML file.
+To start the conversion script, simply run:
+
+ ```bash
+python crawler/crawler_2/conversion.py
+```
