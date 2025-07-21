@@ -37,28 +37,14 @@ def compute_tf(text: str) -> Dict[str, int]:
     tokens = re.findall(r"\b\w+\b", text.lower())
     return dict(Counter(tokens))
 
-
-def load_documents_v1() -> List[Document]:
-    con = duckdb.connect("/crawler/crawler_2/final/final.db")
-    rows = con.execute("SELECT url, title, excerpt, main_image, favicon FROM main.documents_filtered3").fetchall()
-
-    documents = []
-    for url, title, excerpt, img, favicon in rows:
-        tf = compute_tf((title or "") + " " + (excerpt or ""))
-        doc = Document(url, title, excerpt, img, favicon)
-        doc.word_dict = tf
-        documents.append(doc)
-    return documents
-
-
-def load_documents_v2() -> List[Document]:
-    con = duckdb.connect("crawler/crawler_2/data.db")
-    rows = con.execute("SELECT link, title, content FROM main.documents").fetchall()
+def load_documents() -> List[Document]:
+    con = duckdb.connect("crawler/crawler_2/final/final.db")
+    rows = con.execute("SELECT link, title, content, image_url FROM main.documents").fetchall()
 
     documents = []
-    for link, title, blob in rows:
+    for link, title, content, image_url in rows:
         try:
-            content = gzip.decompress(blob).decode("utf-8", errors="ignore")
+            content = gzip.decompress(content).decode("utf-8", errors="ignore")
         except Exception:
             content = ""
 
@@ -68,7 +54,7 @@ def load_documents_v2() -> List[Document]:
             url=link,
             title=title,
             excerpt=excerpt,
-            main_image=None,
+            main_image=image_url,
             favicon=None
         )
         doc.word_dict = tf
@@ -81,16 +67,10 @@ async def lifespan(app: FastAPI):
     global retriever_v1, retriever_v2, autocomplete_service
 
     # v1: Tübingen Crawler
-    docs1 = load_documents_v1()
+    docs = load_documents()
     retriever_v1 = RetrievalEngine(use_prf=True, use_rerank=True)
-    retriever_v1.fit(docs1)
-    logger.info(f"Loaded {len(docs1)} documents from v1.")
-
-    # v2: Gzipped Content
-    docs2 = load_documents_v2()
-    retriever_v2 = RetrievalEngine(use_prf=True, use_rerank=True)
-    retriever_v2.fit(docs2)
-    logger.info(f"Loaded {len(docs2)} documents from v2.")
+    retriever_v1.fit(docs)
+    logger.info(f"Loaded {len(docs)} documents from v1.")
 
     # Initialize autocomplete service
     requested_model = ModelType.NGRAM if SELECTED_AUTOCOMPLETE_MODEL == "ngram" else ModelType.DATAMUSE
@@ -165,10 +145,7 @@ def tokenize(text: str) -> List[str]:
 
 
 def build_docs(docs: List[Document], query: str) -> List[Doc]:
-    print(query)
     query_words = set(tokenize(query)) - stop_words
-    print(stop_words)
-    print(query_words)
     return [
         Doc(
             id=i + 1,
@@ -191,26 +168,12 @@ def build_docs(docs: List[Document], query: str) -> List[Doc]:
 # --- API Router für v1 ---
 router_v1 = APIRouter(prefix="/v1", tags=["v1"])
 
-
 @router_v1.get("/search", response_model=SearchResponse)
 async def search_v1(q: str = Query(...)):
-    print()
     results = retriever_v1.search(q)
     return SearchResponse(results=build_docs(results, q))
 
-
-# --- API Router für v2 ---
-router_v2 = APIRouter(prefix="/v2", tags=["v2"])
-
-
-@router_v2.get("/search", response_model=SearchResponse)
-async def search_v2(q: str = Query(...)):
-    results = retriever_v2.search(q)
-    return SearchResponse(results=build_docs(results, q))
-
-
 app.include_router(router_v1)
-app.include_router(router_v2)
 
 
 # --- Autocomplete API ---
