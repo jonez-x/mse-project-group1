@@ -14,7 +14,7 @@ import uvicorn
 from collections import Counter
 from nltk.corpus import stopwords
 import re
-from autocomplete_system.services.simple_autocomplete import SimpleAutocompleteService, ModelType
+from autocomplete_system.services.autocomplete import AutocompleteService, ModelType
 from config import DEFAULT_AUTOCOMPLETE_MODEL
 
 # Global variable to store the selected model
@@ -28,7 +28,7 @@ logging.basicConfig(level=logging.INFO)
 
 retriever_v1: Optional[RetrievalEngine] = None
 retriever_v2: Optional[RetrievalEngine] = None
-autocomplete_service: Optional[SimpleAutocompleteService] = None
+autocomplete_service: Optional[AutocompleteService] = None
 
 
 def compute_tf(text: str) -> Dict[str, int]:
@@ -91,7 +91,7 @@ async def lifespan(app: FastAPI):
     logger.info(f"Loaded {len(docs2)} documents from v2.")
 
     # Initialize autocomplete service
-    autocomplete_service = SimpleAutocompleteService(
+    autocomplete_service = AutocompleteService(
         default_model=ModelType.NGRAM if SELECTED_AUTOCOMPLETE_MODEL == "ngram" else ModelType.DATAMUSE
     )
     logger.info(f"Autocomplete service initialized. Available models: {autocomplete_service.get_available_models()}")
