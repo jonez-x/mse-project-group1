@@ -96,7 +96,7 @@ This project was developed and tested with Python 3.13, so make sure to use this
 
 ## Usage
 
-# !Important! : The database (final.zip) is zipped to reduce the size, it needs to be unzipped to start the search engine.
+!Important! : The database (final.zip) is zipped to reduce the size, it needs to be unzipped to start the search engine.
 
 1. Start the FastAPI server:
 
