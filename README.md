@@ -136,6 +136,8 @@ python -m pytest tests/retrieval_engine/ -v -s
 ```
 
 ## Web Crawling
+!Important! : The database is zipped to reduce the size, it needs to be unzipped to start the search engine.
+
 To start the Web crawler simply execute the main.py in the crawler folder:
  ```bash
 python crawler/crawler_2/main.py
@@ -143,13 +145,14 @@ python crawler/crawler_2/main.py
 
 The crawler will run, until there is a shutdown signal CTRL+C or the frontier is empty.
 After the crawler is finished there will be a crawl_info/ folder, which contains the visited and logged URLs in a JSON file and a log file.
-Additionally there will be a data.db, which contains the entire data of the crawling process.
+Additionally there will be a newly created .db file (data.db or another similar name), which contains the entire data of the crawling process.
 
-After the crawler is done, a conversion is needed, which extracts the visible text and the main image from the HTML file. This will create a file called final.db.
+The data.db file consists of an ID, URL, Title and the compressed HTML.
+The rest of the code will need another database structure. Mainly ID, URL, Title, compressed content of the HTML, image_url (if found at all).
+The structures of the data.db and final.db files created by the web crawling process can be seen in the setup.sql and new.sql files respectively, inside the folder crawler/crawler_2/.
+
+Therefore, a conversion is needed, which extracts the visible text and the main image from the HTML file. This will create a file called final.db.
 To start the conversion script, simply run:
-
  ```bash
 python crawler/crawler_2/conversion.py
 ```
-
-The structures of the data.db and final.db files created by the web crawling process can be seen in the setup.sql and new.sql files respectively, inside the folder crawler/crawler_2/.
