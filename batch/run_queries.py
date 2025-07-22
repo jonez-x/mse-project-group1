@@ -81,7 +81,7 @@ def run_batch_queries() -> None:
                     else:
                         doc = entry  # type: ignore
                         score = getattr(doc, 'score', None)
-                    out.write(f"{q_idx}\t{rank}\t{doc.url}\t{score}\t{doc.excerpt}\n")
+                    out.write(f"{q_idx}\t{rank}\t{doc.url}\t{score}\n")
             except Exception as e:
                 print(f"Error processing query {q_idx}: {e}")
 
